@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A feed symbol: one dot and two arcs, inside the 72dp safe zone of a 108dp adaptive icon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFF4E9D8"
+        android:pathData="M41,67m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFF4E9D8"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:pathData="M35,48 C47,48 54,55 54,67" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFE8A64E"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:pathData="M35,33 C56,33 69,46 69,67" />
+</vector>

@@ -1,0 +1,4 @@
+<opml><body>
+<outline text="Premier" xmlUrl="https://a.example.com/feed" <<<< garbage
+<outline text='Second' xmlUrl='https://b.example.com/rss.xml' />
+</opml

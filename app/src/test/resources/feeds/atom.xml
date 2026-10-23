@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="de">
+  <title type="text">Ein Atom Feed</title>
+  <link rel="self" href="https://atom.example.de/feed.xml"/>
+  <link rel="alternate" type="text/html" href="https://atom.example.de/"/>
+  <icon>/favicon.png</icon>
+  <updated>2025-06-03T10:00:00Z</updated>
+  <entry>
+    <title>Erster Eintrag</title>
+    <link rel="alternate" href="/2025/erster"/>
+    <link rel="enclosure" href="https://atom.example.de/file.pdf"/>
+    <id>tag:atom.example.de,2025:1</id>
+    <published>2025-06-03T08:30:00+02:00</published>
+    <updated>2025-06-03T09:00:00+02:00</updated>
+    <author><name>Max Mustermann</name></author>
+    <summary type="html">&lt;p&gt;Kurze Zusammenfassung.&lt;/p&gt;</summary>
+    <content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>Voller <strong>Inhalt</strong>.</p></div></content>
+  </entry>
+  <entry>
+    <title type="html">Zweiter &amp;amp; letzter</title>
+    <link href="https://atom.example.de/2025/zweiter"/>
+    <id>tag:atom.example.de,2025:2</id>
+    <updated>2025-06-01T12:00:00Z</updated>
+    <content type="text">Nur Text &lt;kein html&gt;</content>
+  </entry>
+</feed>

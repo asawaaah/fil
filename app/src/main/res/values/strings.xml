@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Fil</string>
+    <string name="import_opml">Importer dans Fil</string>
+    <string name="follow_site">Suivre dans Fil</string>
+</resources>

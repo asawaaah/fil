@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+<head><title>Subscriptions from Inoreader [https://www.inoreader.com]</title></head>
+<body>
+<outline title="Science" text="Science">
+<outline text="Quanta Magazine" title="Quanta Magazine" type="rss" xmlUrl="https://www.quantamagazine.org/feed/" htmlUrl="https://www.quantamagazine.org"/>
+<outline text="Nature &amp; Science" title="Nature &amp; Science" type="rss" xmlUrl="https://www.nature.com/nature.rss?foo=1&amp;bar=2" htmlUrl="https://www.nature.com"/>
+</outline>
+<outline title="Reddit" text="Reddit">
+<outline text="r/androiddev" title="r/androiddev" type="rss" xmlUrl="https://www.reddit.com/r/androiddev/.rss" htmlUrl="https://www.reddit.com/r/androiddev"/>
+</outline>
+</body>
+</opml>

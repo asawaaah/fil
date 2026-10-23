@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<opml version="2.0">
+<head><title>Fichier abîmé & bizarre</title>
+<body>
+  <outline text="Tech">
+    <outline text="Sous-dossier">
+      <OUTLINE TEXT="Majuscules" XMLURL="https://example.com/upper.xml" />
+      <outline text="Avec espaces" xmlUrl="  https://example.com/spaces.xml  ">
+    </outline>
+  </outline>
+  </outline>
+  <outline text="Sans schéma" xmlUrl="example.org/feed" />
+  <outline text="Protocole feed" xmlUrl="feed://example.net/rss" />
+  <outline text="Attribut url" type="rss" url="https://example.io/atom.xml" />
+  <outline text="Un lien, pas un flux" type="link" url="https://example.io/page" />
+  <outline text="Doublon http" xmlUrl="http://www.example.com/upper.xml/" />
+  <outline text="Tom &amp;amp; Jerry" xmlUrl="https://example.com/tj.xml" />
+  <outline text="Catégorie OPML 2" category="/Sport/Vélo" xmlUrl="https://example.com/velo.xml" />
+  <outline text="Adresse cassée" xmlUrl="javascript:alert(1)" />
+</body>

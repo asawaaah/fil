@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+  <head>
+    <title>Abonnements Feedly</title>
+  </head>
+  <body>
+    <outline text="Tech" title="Tech">
+      <outline type="rss" text="The Verge" title="The Verge" xmlUrl="https://www.theverge.com/rss/index.xml" htmlUrl="https://www.theverge.com/"/>
+      <outline type="rss" text="Ars Technica" title="Ars Technica" xmlUrl="https://feeds.arstechnica.com/arstechnica/index" htmlUrl="https://arstechnica.com"/>
+    </outline>
+    <outline text="Actualités" title="Actualités">
+      <outline type="rss" text="Le Monde" title="Le Monde" xmlUrl="https://www.lemonde.fr/rss/une.xml" htmlUrl="https://www.lemonde.fr"/>
+      <outline type="rss" text="El País" title="El País" xmlUrl="https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada" htmlUrl="https://elpais.com"/>
+    </outline>
+    <outline type="rss" text="Android Developers" title="Android Developers" xmlUrl="http://android-developers.googleblog.com/atom.xml"/>
+  </body>
+</opml>
