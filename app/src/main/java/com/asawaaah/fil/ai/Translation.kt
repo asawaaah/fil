@@ -267,6 +267,27 @@ class TranslationService(
         return lang
     }
 
+    /** Language of a short text (e.g. a summary), or null when unsure. */
+    suspend fun detect(text: String): String? = runCatching { detector.detect(text) }.getOrNull()
+
+    /**
+     * Translates a short multi-line text (a summary) into French line by line, keeping the bullets.
+     * Downloads the language pack if needed and allowed. Null when it can't be done now.
+     */
+    suspend fun translateLines(text: String, lang: String): String? {
+        val code = translator.codeFor(lang) ?: return null
+        if (!translator.ensureModel(code, wifiOnly = settings.current().translateWifiOnly)) return null
+        return runCatching {
+            val out = ArrayList<String>()
+            for (line in text.lines()) {
+                val bullet = line.startsWith("• ")
+                val body = if (bullet) line.removePrefix("• ") else line
+                out += (if (bullet) "• " else "") + translator.translate(body, code)
+            }
+            out.joinToString("\n")
+        }.getOrNull()
+    }
+
     suspend fun translateText(text: String, lang: String): String? {
         val code = translator.codeFor(lang) ?: return null
         if (!translator.isReady(code)) return null

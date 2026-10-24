@@ -76,6 +76,30 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.text.input.ImeAction
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
@@ -105,11 +129,50 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
     var textMenu by remember { mutableStateOf(false) }
     val article = state.article
     val link = article?.linkUrl ?: article?.url
+    val shownTitle = article?.let { if (state.showTranslated && state.translatedTitle != null) state.translatedTitle!! else it.title }
+
+    // Find in the article.
+    var searching by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var current by remember { mutableIntStateOf(0) }
+    val matches by produceState(emptyList<SearchMatch>(), searching, query, shownTitle, state.visibleBlocks) {
+        value = if (!searching) emptyList() else withContext(Dispatchers.Default) {
+            ArticleSearch.find(query, shownTitle, state.visibleBlocks)
+        }
+    }
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val keyboard = LocalSoftwareKeyboardController.current
+    val hasFooter = link != null
+    fun goTo(index: Int) {
+        if (matches.isEmpty()) return
+        current = Math.floorMod(index, matches.size)
+        val m = matches[current]
+        // Blocks are the last items of the list, just before the footer.
+        val total = listState.layoutInfo.totalItemsCount
+        val item = if (m.block == SearchMatch.TITLE) 0 else total - (if (hasFooter) 1 else 0) - state.visibleBlocks.size + m.block
+        scope.launch { listState.animateScrollToItem(item.coerceIn(0, (total - 1).coerceAtLeast(0))) }
+    }
+    LaunchedEffect(matches) {
+        current = 0
+        if (matches.isNotEmpty()) goTo(0)
+    }
+    fun closeSearch() {
+        searching = false
+        query = ""
+        keyboard?.hide()
+    }
+    BackHandler(enabled = searching) { closeSearch() }
+    val currentMatch = matches.getOrNull(current)
+    val byBlock = remember(matches) { matches.groupBy { it.block } }
 
     GlassScreen(
         title = state.feed?.title ?: "Article",
         onBack = onBack,
-        titleContent = {
+        titleContent = if (searching) {
+            { SearchField(query, onChange = { query = it }, onNext = { goTo(current + 1); keyboard?.hide() }) }
+        } else {
+            {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 state.feed?.let { feed ->
                     SourceIcon(feed.iconUrl, feed.title, size = 22.dp)
@@ -123,8 +186,31 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                     )
                 }
             }
+            }
         },
         actions = {
+            if (searching) {
+                val count = when {
+                    query.trim().length < ArticleSearch.MIN_QUERY -> ""
+                    matches.isEmpty() -> "0"
+                    else -> "${current + 1}/${matches.size}"
+                }
+                Text(
+                    count,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+                IconButton(onClick = { goTo(current - 1) }, enabled = matches.isNotEmpty()) {
+                    Icon(Icons.Default.KeyboardArrowUp, "Occurrence précédente")
+                }
+                IconButton(onClick = { goTo(current + 1) }, enabled = matches.isNotEmpty()) {
+                    Icon(Icons.Default.KeyboardArrowDown, "Occurrence suivante")
+                }
+                IconButton(onClick = { closeSearch() }) { Icon(Icons.Default.Close, "Fermer la recherche") }
+            } else {
+                    IconButton(onClick = { searching = true }, enabled = article != null) {
+                        Icon(Icons.Default.Search, "Rechercher dans l'article")
+                    }
                     Box {
                         IconButton(onClick = { textMenu = true }) { Icon(Icons.Default.TextFields, "Taille du texte") }
                         DropdownMenu(expanded = textMenu, onDismissRequest = { textMenu = false }) {
@@ -150,6 +236,7 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                             Icon(Icons.Default.Share, "Partager")
                         }
                     }
+            }
         },
     ) { padding ->
         if (article == null) {
@@ -157,8 +244,13 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
             return@GlassScreen
         }
         val bodyStyle = readerBodyStyle(settings.textScale, settings.serif, MaterialTheme.colorScheme.onSurface)
+        val hl = Highlight(
+            other = SpanStyle(background = MaterialTheme.colorScheme.tertiaryContainer, color = MaterialTheme.colorScheme.onTertiaryContainer),
+            current = SpanStyle(background = MaterialTheme.colorScheme.tertiary, color = MaterialTheme.colorScheme.onTertiary),
+        )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
+            state = listState,
             contentPadding = PaddingValues(
                 start = 20.dp,
                 end = 20.dp,
@@ -169,9 +261,8 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
         ) {
             item(key = "header") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val title = if (state.showTranslated && state.translatedTitle != null) state.translatedTitle!! else article.title
                     Text(
-                        title,
+                        highlighted(AnnotatedString(shownTitle ?: article.title), byBlock[SearchMatch.TITLE], currentMatch, hl),
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontFamily = if (settings.serif) FontFamily.Serif else FontFamily.SansSerif,
                             fontSize = (24 * settings.textScale).sp,
@@ -205,7 +296,17 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                 }
             }
             if (state.summary != SummaryUi.Hidden) {
-                item(key = "summary") { SummaryCard(state.summary, settings, onRetry = { vm.summarize(force = true) }, onClose = vm::hideSummary, onOpenSettings = onOpenSettings) }
+                item(key = "summary") {
+                    SummaryCard(
+                        state.summary,
+                        settings,
+                        onRetry = { vm.summarize(force = true) },
+                        onClose = vm::hideSummary,
+                        onOpenSettings = onOpenSettings,
+                        onTranslate = vm::translateSummary,
+                        onShowOriginal = vm::showSummaryOriginal,
+                    )
+                }
             }
             val translation = state.translation
             if (translation is TranslationUi.Unavailable) {
@@ -253,8 +354,8 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                     )
                 }
             }
-            items(state.visibleBlocks.withIndex().toList(), key = { "b${it.index}" }) { (_, block) ->
-                BlockView(block, bodyStyle)
+            items(state.visibleBlocks.withIndex().toList(), key = { "b${it.index}" }) { (index, block) ->
+                BlockView(block, bodyStyle, byBlock[index], currentMatch, hl)
             }
             if (link != null) {
                 item(key = "footer") {
@@ -328,6 +429,8 @@ private fun SummaryCard(
     onRetry: () -> Unit,
     onClose: () -> Unit,
     onOpenSettings: () -> Unit,
+    onTranslate: () -> Unit = {},
+    onShowOriginal: () -> Unit = {},
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().animateContentSize(),
@@ -365,7 +468,33 @@ private fun SummaryCard(
                     }
                 }
                 is SummaryUi.Done -> {
-                    Text(summary.text, style = textStyle)
+                    Text(summary.shown, style = textStyle)
+                    if (summary.language != "fr") {
+                        when {
+                            summary.translating -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                                Text("Traduction du résumé…", style = MaterialTheme.typography.labelMedium)
+                            }
+                            summary.showFrench && summary.french != null -> TextButton(onClick = onShowOriginal) {
+                                Icon(Icons.Default.Translate, null, Modifier.size(18.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("Traduit ${com.asawaaah.fil.ai.Languages.fromPhrase(summary.language)} · voir l'original")
+                            }
+                            else -> {
+                                if (summary.translationFailed) {
+                                    Text(
+                                        "Traduction impossible pour l'instant (pack de langue à télécharger en Wi-Fi).",
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
+                                }
+                                FilledTonalButton(onClick = onTranslate) {
+                                    Icon(Icons.Default.Translate, null, Modifier.size(18.dp))
+                                    Spacer(Modifier.width(6.dp))
+                                    Text("Traduire le résumé")
+                                }
+                            }
+                        }
+                    }
                     Text(
                         listOfNotNull("Généré sur l'appareil", summary.modelName, summary.detail).joinToString(" · "),
                         style = MaterialTheme.typography.labelSmall,
@@ -381,13 +510,61 @@ private fun SummaryCard(
     }
 }
 
+/** Search highlight styles: every occurrence, and the one the arrows are on. */
+private data class Highlight(val other: SpanStyle, val current: SpanStyle)
+
+private fun highlighted(text: AnnotatedString, matches: List<SearchMatch>?, current: SearchMatch?, hl: Highlight): AnnotatedString {
+    if (matches.isNullOrEmpty()) return text
+    return buildAnnotatedString {
+        append(text)
+        for (m in matches) {
+            if (m.end <= text.length) addStyle(if (m == current) hl.current else hl.other, m.start, m.end)
+        }
+    }
+}
+
 @Composable
-private fun BlockView(block: Block, body: TextStyle) {
+private fun SearchField(query: String, onChange: (String) -> Unit, onNext: () -> Unit) {
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { focus.requestFocus() }
+    BasicTextField(
+        value = query,
+        onValueChange = onChange,
+        singleLine = true,
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { onNext() }),
+        modifier = Modifier.fillMaxWidth().focusRequester(focus).semantics { contentDescription = "Rechercher dans l'article" },
+        decorationBox = { inner ->
+            Box(contentAlignment = Alignment.CenterStart) {
+                if (query.isEmpty()) {
+                    Text("Rechercher…", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                inner()
+            }
+        },
+    )
+}
+
+@Composable
+private fun BlockView(
+    block: Block,
+    body: TextStyle,
+    matches: List<SearchMatch>? = null,
+    current: SearchMatch? = null,
+    hl: Highlight? = null,
+) {
     val linkColor = MaterialTheme.colorScheme.primary
     val codeBg = MaterialTheme.colorScheme.surfaceVariant
+    fun RichText.shown(): AnnotatedString {
+        val a = toAnnotated(linkColor, codeBg)
+        return if (hl == null) a else highlighted(a, matches, current, hl)
+    }
+    fun String.shown(): AnnotatedString = AnnotatedString(this).let { if (hl == null) it else highlighted(it, matches, current, hl) }
     when (block) {
         is Block.Heading -> Text(
-            block.text.toAnnotated(linkColor, codeBg),
+            block.text.shown(),
             style = body.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = body.fontSize * if (block.level <= 2) 1.25f else 1.1f,
@@ -395,7 +572,7 @@ private fun BlockView(block: Block, body: TextStyle) {
             ),
             modifier = Modifier.padding(top = 6.dp),
         )
-        is Block.Paragraph -> Text(block.text.toAnnotated(linkColor, codeBg), style = body)
+        is Block.Paragraph -> Text(block.text.shown(), style = body)
         is Block.Quote -> Row(Modifier.height(IntrinsicSize.Min)) {
             Box(
                 Modifier
@@ -405,17 +582,17 @@ private fun BlockView(block: Block, body: TextStyle) {
             )
             Spacer(Modifier.width(12.dp))
             Text(
-                block.text.toAnnotated(linkColor, codeBg),
+                block.text.shown(),
                 style = body.copy(fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         }
         is Block.ListItem -> Row(Modifier.padding(start = (block.depth * 18).dp)) {
             Text(if (block.ordered) "${block.index}." else "•", style = body, modifier = Modifier.width(26.dp))
-            Text(block.text.toAnnotated(linkColor, codeBg), style = body)
+            Text(block.text.shown(), style = body)
         }
         is Block.Code -> Surface(color = codeBg, shape = RoundedCornerShape(8.dp)) {
             Text(
-                block.text,
+                block.text.shown(),
                 style = body.copy(fontFamily = FontFamily.Monospace, fontSize = body.fontSize * 0.8f, lineHeight = body.lineHeight * 0.8f),
                 modifier = Modifier.horizontalScroll(rememberScrollState()).padding(12.dp),
             )
@@ -428,7 +605,7 @@ private fun BlockView(block: Block, body: TextStyle) {
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)),
             )
             block.caption?.let {
-                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(it.shown(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Block.Divider -> HorizontalDivider(Modifier.padding(vertical = 8.dp))

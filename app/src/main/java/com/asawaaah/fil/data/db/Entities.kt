@@ -119,6 +119,10 @@ data class ArticleContentEntity(
     val summary: String? = null,
     val summaryModel: String? = null,
     val summaryAt: Long? = null,
+    /** Language the summary is written in ("fr", "en"...); null for summaries made before 0.1.7 (French). */
+    val summaryLang: String? = null,
+    /** French translation of a summary written in the article's language. */
+    val summaryFr: String? = null,
     /** Translation by the on-device model: title then block texts, joined by [TRANSLATION_SEPARATOR]. */
     val aiTranslatedTexts: String? = null,
     val aiTranslatedSourceHash: Int? = null,

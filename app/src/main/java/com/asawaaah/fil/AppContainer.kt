@@ -47,12 +47,11 @@ class AppContainer(context: Context) {
 
     val modelManager = ModelManager(appContext)
     val llm = LlmEngine(appContext, appScope, modelManager, settings)
-    val summaryService = SummaryService(db, articleRepository, Summarizer(llm))
-
     val connectivity = Connectivity(appContext)
     val translationService = TranslationService(
         db, LanguageDetector(), MlKitTranslator(connectivity), settings, connectivity, AiTranslator(llm),
     )
+    val summaryService = SummaryService(db, articleRepository, Summarizer(llm), settings, translationService)
 
     val importManager = ImportManager(db, feedRepository, appScope) {
         appScope.launch {

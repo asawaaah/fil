@@ -105,6 +105,7 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
     fun setRefreshHours(v: Int) = edit { c.settings.setRefreshHours(v) }
     fun setKeepDays(v: Int) = edit { c.settings.setKeepDays(v) }
     fun setGroupBySource(v: Boolean) = edit { c.settings.setGroupBySource(v) }
+    fun setCompactFeed(v: Boolean) = edit { c.settings.setCompactFeed(v) }
     fun setAutoTranslate(v: Boolean) = edit {
         c.settings.setAutoTranslate(v)
         if (v) c.translateInBackground()

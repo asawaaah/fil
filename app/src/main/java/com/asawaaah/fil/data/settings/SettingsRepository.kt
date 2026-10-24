@@ -28,6 +28,8 @@ data class Settings(
     val unreadOnly: Boolean = false,
     /** Articles of a source published the same day are shown as one stack (from 3 articles). */
     val groupBySource: Boolean = true,
+    /** Compact cards in the feed: title and a small picture, no excerpt. */
+    val compactFeed: Boolean = false,
     val autoTranslate: Boolean = true,
     val translateWifiOnly: Boolean = true,
     /** Translate opened articles with the on-device model (slower, better) instead of ML Kit only. */
@@ -50,6 +52,7 @@ class SettingsRepository(private val context: Context) {
         val keepDays = intPreferencesKey("keep_days")
         val unreadOnly = booleanPreferencesKey("unread_only")
         val groupBySource = booleanPreferencesKey("group_by_source")
+        val compactFeed = booleanPreferencesKey("compact_feed")
         val autoTranslate = booleanPreferencesKey("auto_translate")
         val translateWifiOnly = booleanPreferencesKey("translate_wifi_only")
         val aiTranslation = booleanPreferencesKey("ai_translation")
@@ -73,6 +76,7 @@ class SettingsRepository(private val context: Context) {
             keepDays = this[Keys.keepDays] ?: d.keepDays,
             unreadOnly = this[Keys.unreadOnly] ?: d.unreadOnly,
             groupBySource = this[Keys.groupBySource] ?: d.groupBySource,
+            compactFeed = this[Keys.compactFeed] ?: d.compactFeed,
             autoTranslate = this[Keys.autoTranslate] ?: d.autoTranslate,
             translateWifiOnly = this[Keys.translateWifiOnly] ?: d.translateWifiOnly,
             aiTranslation = this[Keys.aiTranslation] ?: d.aiTranslation,
@@ -90,6 +94,7 @@ class SettingsRepository(private val context: Context) {
     suspend fun setKeepDays(v: Int) = context.dataStore.edit { it[Keys.keepDays] = v }
     suspend fun setUnreadOnly(v: Boolean) = context.dataStore.edit { it[Keys.unreadOnly] = v }
     suspend fun setGroupBySource(v: Boolean) = context.dataStore.edit { it[Keys.groupBySource] = v }
+    suspend fun setCompactFeed(v: Boolean) = context.dataStore.edit { it[Keys.compactFeed] = v }
     suspend fun setAutoTranslate(v: Boolean) = context.dataStore.edit { it[Keys.autoTranslate] = v }
     suspend fun setTranslateWifiOnly(v: Boolean) = context.dataStore.edit { it[Keys.translateWifiOnly] = v }
     suspend fun setAiTranslation(v: Boolean) = context.dataStore.edit { it[Keys.aiTranslation] = v }

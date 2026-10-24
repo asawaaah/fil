@@ -218,6 +218,7 @@ fun FeedScreen(
                                     onClick = { onOpenArticle(item.id) },
                                     onToggleSaved = { vm.toggleSaved(item) },
                                     onSetRead = { vm.setRead(item, it) },
+                                    compact = settings.compactFeed,
                                 )
                                 HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                             }
@@ -229,6 +230,7 @@ fun FeedScreen(
                             onMarkRead = { vm.markGroupRead(row.group) },
                             onToggleSaved = { vm.toggleSaved(it) },
                             onSetRead = { item, read -> vm.setRead(item, read) },
+                            compact = settings.compactFeed,
                         )
                         is FeedRow.GroupHead -> ExpandedGroupHeader(
                             group = row.group,
@@ -385,6 +387,7 @@ private fun GroupCard(
     onMarkRead: () -> Unit,
     onToggleSaved: (ArticleListItem) -> Unit,
     onSetRead: (ArticleListItem, Boolean) -> Unit,
+    compact: Boolean = false,
 ) {
     val scheme = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(20.dp)
@@ -422,6 +425,7 @@ private fun GroupCard(
                 onClick = { onOpenArticle(group.lead.id) },
                 onToggleSaved = { onToggleSaved(group.lead) },
                 onSetRead = { onSetRead(group.lead, it) },
+                compact = compact,
             )
             previews.forEach { item ->
                 Row(
@@ -563,6 +567,8 @@ fun ArticleCard(
     onClick: () -> Unit,
     onToggleSaved: () -> Unit,
     onSetRead: (Boolean) -> Unit,
+    /** Title and a small picture only: about twice as many articles per screen. */
+    compact: Boolean = false,
 ) {
     val context = LocalContext.current
     var menu by remember { mutableStateOf(false) }
@@ -572,7 +578,7 @@ fun ArticleCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .combinedClickable(onClick = onClick, onLongClick = { menu = true })
-                .padding(start = 16.dp, end = 4.dp, top = 12.dp, bottom = 12.dp)
+                .padding(start = 16.dp, end = if (compact) 12.dp else 4.dp, top = if (compact) 10.dp else 12.dp, bottom = if (compact) 10.dp else 12.dp)
                 .alpha(if (item.isRead) 0.55f else 1f),
             verticalAlignment = Alignment.Top,
         ) {
@@ -609,16 +615,20 @@ fun ArticleCard(
                         Spacer(Modifier.width(6.dp))
                         Icon(Icons.Default.AutoAwesome, "Résumé prêt", Modifier.size(13.dp), tint = MaterialTheme.colorScheme.primary)
                     }
+                    if (compact && item.isSaved) {
+                        Spacer(Modifier.width(6.dp))
+                        Icon(Icons.Default.Bookmark, "À lire plus tard", Modifier.size(13.dp), tint = MaterialTheme.colorScheme.secondary)
+                    }
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
                     item.titleFr ?: item.title,
                     style = MaterialTheme.typography.titleMedium,
-                    maxLines = 3,
+                    maxLines = if (compact) 2 else 3,
                     overflow = TextOverflow.Ellipsis,
                 )
                 val excerpt = item.excerptFr ?: item.excerpt
-                if (!excerpt.isNullOrBlank()) {
+                if (!compact && !excerpt.isNullOrBlank()) {
                     Spacer(Modifier.height(4.dp))
                     Text(
                         excerpt,
@@ -629,7 +639,20 @@ fun ArticleCard(
                     )
                 }
             }
-            Column(horizontalAlignment = Alignment.End) {
+            if (compact) {
+                // Saving stays one long press away (menu), the card keeps its small height.
+                if (item.imageUrl != null) {
+                    AsyncImage(
+                        model = item.imageUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                    )
+                }
+            } else Column(horizontalAlignment = Alignment.End) {
                 if (item.imageUrl != null) {
                     AsyncImage(
                         model = item.imageUrl,

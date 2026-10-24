@@ -17,15 +17,15 @@ sealed interface SummaryEvent {
     data class Done(val text: String, val model: LlmModel, val millis: Long, val accelerator: Accelerator?) : SummaryEvent
 }
 
-/** Writes a short French summary of an article, whatever its language. */
+/** Writes a short summary of an article, in French or in the article's own language ([language]). */
 class Summarizer(private val engine: LlmEngine) {
 
-    fun summarize(title: String, articleText: String): Flow<SummaryEvent> = channelFlow {
+    fun summarize(title: String, articleText: String, language: String = "fr"): Flow<SummaryEvent> = channelFlow {
         val started = System.currentTimeMillis()
         engine.use(onLoading = { send(SummaryEvent.LoadingModel) }) { eng, model ->
             send(SummaryEvent.Reading)
             val config = ConversationConfig(
-                systemInstruction = Contents.of(SYSTEM_PROMPT),
+                systemInstruction = Contents.of(if (language == "fr") SYSTEM_PROMPT else SYSTEM_PROMPT_OTHER),
                 samplerConfig = SamplerConfig(topK = 40, topP = 0.9, temperature = 0.3),
                 maxOutputToken = 512,
                 thinkingConfig = ThinkingConfig(enableThinking = false),
@@ -33,7 +33,7 @@ class Summarizer(private val engine: LlmEngine) {
             eng.createConversation(config).use { conversation ->
                 val raw = StringBuilder()
                 try {
-                    conversation.sendMessageAsync(buildPrompt(title, articleText, model)).collect { message ->
+                    conversation.sendMessageAsync(buildPrompt(title, articleText, model, language)).collect { message ->
                         val chunk = message.toString()
                         // Handle both cumulative and incremental streaming.
                         if (raw.isNotEmpty() && chunk.length >= raw.length && chunk.startsWith(raw)) {
@@ -59,9 +59,32 @@ class Summarizer(private val engine: LlmEngine) {
             "Tu es un assistant de lecture. Tu résumes fidèlement des articles en français, " +
                 "sans rien inventer et sans donner ton avis."
 
-        fun buildPrompt(title: String, text: String, model: LlmModel): String {
+        private const val SYSTEM_PROMPT_OTHER =
+            "You are a reading assistant. You summarize articles faithfully, without inventing anything " +
+                "and without giving your opinion."
+
+        /** English name of a language code, used in the prompt: "Spanish", "German"... */
+        fun languageName(code: String): String =
+            java.util.Locale.forLanguageTag(code).getDisplayLanguage(java.util.Locale.ENGLISH).ifBlank { code }
+
+        fun buildPrompt(title: String, text: String, model: LlmModel, language: String = "fr"): String {
             val body = truncate(text, MAX_INPUT_CHARS)
             val noThink = if (model.family == ModelFamily.QWEN) " /no_think" else ""
+            if (language != "fr") {
+                val name = languageName(language)
+                return """
+                    Summarize the article below in $name, in 3 to 5 key points.
+                    Rules:
+                    - Each point starts with "•" and is one or two sentences long.
+                    - Write only in $name, the language of the article.
+                    - No introduction and no conclusion: only the points.
+
+                    Title: $title
+
+                    Article:
+                    $body$noThink
+                """.trimIndent()
+            }
             return """
                 Résume l'article ci-dessous en français, en 3 à 5 points clés.
                 Règles :

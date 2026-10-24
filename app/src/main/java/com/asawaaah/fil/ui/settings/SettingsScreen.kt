@@ -207,6 +207,14 @@ fun SettingsScreen(onImportOpml: () -> Unit) {
 
             item { Section("Fil") }
             item {
+                ChoiceRow(
+                    "Affichage",
+                    listOf(false to "Normal", true to "Compact"),
+                    s.compactFeed,
+                    vm::setCompactFeed,
+                )
+            }
+            item {
                 SwitchRow(
                     "Regrouper par source",
                     "Dès 3 articles d'une même source dans la journée, ils forment une pile à déplier.",

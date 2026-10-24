@@ -29,7 +29,22 @@ sealed interface SummaryUi {
     data object Hidden : SummaryUi
     data object NeedsModel : SummaryUi
     data class Working(val stage: String, val partial: String?) : SummaryUi
-    data class Done(val text: String, val modelName: String, val detail: String? = null) : SummaryUi
+    /**
+     * [text] is in [language]; [french] is its translation when there is one, shown when [showFrench].
+     * [translating]: the French translation is being made.
+     */
+    data class Done(
+        val text: String,
+        val modelName: String,
+        val detail: String? = null,
+        val language: String = "fr",
+        val french: String? = null,
+        val showFrench: Boolean = false,
+        val translating: Boolean = false,
+        val translationFailed: Boolean = false,
+    ) : SummaryUi {
+        val shown: String get() = if (showFrench && french != null) french else text
+    }
     data class Error(val message: String) : SummaryUi
 }
 
@@ -93,9 +108,8 @@ class ReaderViewModel(private val c: AppContainer, private val articleId: Long) 
         if (!article.isRead) c.articleRepository.setRead(article.id, true)
 
         // Show any cached summary right away.
-        c.articleRepository.content(article.id)?.summary?.let { cached ->
-            val name = ModelCatalog.byId(c.articleRepository.content(article.id)?.summaryModel).name
-            _state.update { it.copy(summary = SummaryUi.Done(cached, name)) }
+        c.summaryService.cached(article.id)?.let { cached ->
+            _state.update { it.copy(summary = cached.toUi()) }
         }
 
         val content = c.articleRepository.readerContent(article, feed, allowNetwork = true)
@@ -219,12 +233,51 @@ class ReaderViewModel(private val c: AppContainer, private val articleId: Long) 
             c.summaryService.summarize(articleId, force).collect { p ->
                 val ui = when (p) {
                     is SummaryProgress.Working -> SummaryUi.Working(p.stage, p.partial)
-                    is SummaryProgress.Done -> SummaryUi.Done(p.text, p.modelName, p.detail)
+                    is SummaryProgress.Done -> p.toUi()
                     is SummaryProgress.Failed -> SummaryUi.Error(p.message)
                 }
                 _state.update { it.copy(summary = ui) }
             }
         }
+    }
+
+    /** French in the summary card when there is a translation (made automatically or asked for). */
+    private fun SummaryProgress.Done.toUi() = SummaryUi.Done(
+        text = text,
+        modelName = modelName,
+        detail = detail,
+        language = language,
+        french = french,
+        showFrench = french != null,
+    )
+
+    /** Translates a summary written in the article's language into French (ML Kit, about a second). */
+    fun translateSummary() {
+        val done = _state.value.summary as? SummaryUi.Done ?: return
+        if (done.french != null) {
+            _state.update { it.copy(summary = done.copy(showFrench = true)) }
+            return
+        }
+        viewModelScope.launch {
+            _state.update { it.copy(summary = done.copy(translating = true, translationFailed = false)) }
+            val french = c.summaryService.translateSummary(articleId)
+            _state.update {
+                val current = it.summary as? SummaryUi.Done ?: return@update it
+                it.copy(
+                    summary = current.copy(
+                        french = french,
+                        showFrench = french != null,
+                        translating = false,
+                        translationFailed = french == null,
+                    ),
+                )
+            }
+        }
+    }
+
+    fun showSummaryOriginal() {
+        val done = _state.value.summary as? SummaryUi.Done ?: return
+        _state.update { it.copy(summary = done.copy(showFrench = false)) }
     }
 
     fun hideSummary() {

@@ -52,6 +52,15 @@ object ModelCatalog {
         approxBytes = 2_588_000_000L,
         family = ModelFamily.GEMMA,
     )
+    val GEMMA4_E4B = LlmModel(
+        id = "gemma4-e4b",
+        name = "Gemma 4 E4B",
+        description = "Plus fin que E2B, mais plus lent et plus gourmand en mémoire.",
+        url = "https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm",
+        fileName = "gemma-4-E4B-it.litertlm",
+        approxBytes = 3_660_000_000L,
+        family = ModelFamily.GEMMA,
+    )
     val QWEN3_1_7B = LlmModel(
         id = "qwen3-1.7b",
         name = "Qwen3 1.7B",
@@ -71,7 +80,7 @@ object ModelCatalog {
     )
 
     /** The regular models run on every phone; chip-specific ones are extra, faster options. */
-    val all = listOf(GEMMA4_E2B, QWEN3_1_7B, GEMMA4_E2B_TENSOR_G5, GEMMA4_E2B_TENSOR_G6)
+    val all = listOf(GEMMA4_E2B, GEMMA4_E4B, QWEN3_1_7B, GEMMA4_E2B_TENSOR_G5, GEMMA4_E2B_TENSOR_G6)
 
     /** Ids of models imported by the user start with this. */
     const val CUSTOM_PREFIX = "custom:"
