@@ -5,6 +5,31 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.outlined.Article
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Translate
+import androidx.compose.material.icons.outlined.Headphones
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.RssFeed
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -69,6 +94,49 @@ import com.asawaaah.fil.data.settings.GlassMode
 import com.asawaaah.fil.ui.glass.GlassScreen
 import com.asawaaah.fil.ui.common.containerFactory
 
+/** Settings pages, opened from the menu (or from a search result). */
+private enum class Page(val title: String) {
+    APPARENCE("Apparence"),
+    FIL("Fil"),
+    MASQUER("Ce que je ne veux pas voir"),
+    TRADUCTION("Traduction"),
+    IA("Résumés et IA"),
+    AUDIO("Lecture audio"),
+    NOTIFICATIONS("Notifications"),
+    ABONNEMENTS("Abonnements"),
+    A_PROPOS("À propos"),
+}
+
+/** Every setting, for the search: what it is called, other words people may type, its page. */
+private data class SearchEntry(val title: String, val page: Page, val words: String = "")
+
+private val searchIndex = listOf(
+    SearchEntry("Thème clair ou sombre", Page.APPARENCE, "mode nuit dark sombre clair couleur"),
+    SearchEntry("Barres flottantes (Liquid Glass ou opaques)", Page.APPARENCE, "verre transparence glass contraste"),
+    SearchEntry("Taille du texte des articles", Page.APPARENCE, "police grand petit zoom lisibilite"),
+    SearchEntry("Police avec empattement", Page.APPARENCE, "serif police livre"),
+    SearchEntry("Affichage normal ou compact", Page.FIL, "compact cartes images extrait"),
+    SearchEntry("Regrouper par source", Page.FIL, "piles groupes regroupement"),
+    SearchEntry("Actualisation automatique", Page.FIL, "rafraichir mise a jour heures frequence"),
+    SearchEntry("Garder les articles", Page.FIL, "duree suppression nettoyage jours stockage"),
+    SearchEntry("Sujets masqués", Page.MASQUER, "foot football sport people topics themes"),
+    SearchEntry("Mots-clés masqués", Page.MASQUER, "filtre mot cle bloquer cacher"),
+    SearchEntry("Traduire automatiquement en français", Page.TRADUCTION, "traduction langue francais"),
+    SearchEntry("Traduire les articles avec l'IA", Page.TRADUCTION, "gemma traduction naturelle"),
+    SearchEntry("Langues installées", Page.TRADUCTION, "packs langues supprimer espace"),
+    SearchEntry("Télécharger les langues seulement en Wi-Fi", Page.TRADUCTION, "wifi donnees mobiles"),
+    SearchEntry("Modèle d'IA (Gemma, Qwen)", Page.IA, "modele gemma qwen telecharger resume e4b e2b tensor"),
+    SearchEntry("Préparer les résumés pendant la recharge", Page.IA, "batterie charge avance"),
+    SearchEntry("Utiliser la puce graphique (GPU)", Page.IA, "gpu acceleration vitesse"),
+    SearchEntry("Importer un modèle .litertlm", Page.IA, "litertlm fichier modele gguf"),
+    SearchEntry("Vitesse de lecture audio", Page.AUDIO, "voix ecouter vitesse tts"),
+    SearchEntry("Voix du téléphone", Page.AUDIO, "voix tts synthese vocale langue"),
+    SearchEntry("Sources suivies (notifications)", Page.NOTIFICATIONS, "notification avertir alerte"),
+    SearchEntry("Importer un fichier OPML", Page.ABONNEMENTS, "opml import feedly inoreader"),
+    SearchEntry("Exporter mes abonnements (OPML)", Page.ABONNEMENTS, "opml export sauvegarde"),
+    SearchEntry("Version, vie privée, sources des données", Page.A_PROPOS, "version confidentialite licence"),
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(onImportOpml: () -> Unit, onOpenTopics: () -> Unit = {}) {
@@ -79,10 +147,25 @@ fun SettingsScreen(onImportOpml: () -> Unit, onOpenTopics: () -> Unit = {}) {
     val languages by vm.languages.collectAsStateWithLifecycle()
     val message by vm.message.collectAsStateWithLifecycle()
     val customModels by vm.customModels.collectAsStateWithLifecycle()
+    val feeds by vm.feeds.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val screenContext = LocalContext.current
     val customLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) vm.importCustomModel(screenContext, uri)
+    }
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/x-opml")) { uri ->
+        if (uri != null) vm.exportOpml(screenContext, uri)
+    }
+    var pageName by rememberSaveable { mutableStateOf<String?>(null) }
+    val page = pageName?.let { Page.valueOf(it) }
+    var shownNotify by remember(pageName) { mutableStateOf(emptySet<Long>()) }
+    var searching by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    BackHandler(enabled = page != null || searching) {
+        when {
+            searching -> { searching = false; query = "" }
+            else -> pageName = null
+        }
     }
 
     LaunchedEffect(message) {
@@ -92,197 +175,398 @@ fun SettingsScreen(onImportOpml: () -> Unit, onOpenTopics: () -> Unit = {}) {
         }
     }
 
-    GlassScreen(title = "Réglages", snackbar = snackbar) { padding ->
+    val selectedModel = (vm.models + customModels).firstOrNull { it.id == s.selectedModelId }
+
+    GlassScreen(
+        title = page?.title ?: "Réglages",
+        onBack = when {
+            searching -> ({ searching = false; query = "" })
+            page != null -> ({ pageName = null })
+            else -> null
+        },
+        snackbar = snackbar,
+        titleContent = if (searching) {
+            { SettingsSearchField(query) { query = it } }
+        } else {
+            null
+        },
+        actions = {
+            if (page == null && !searching) {
+                IconButton(onClick = { searching = true }) { Icon(Icons.Default.Search, "Rechercher un réglage") }
+            }
+        },
+    ) { padding ->
         LazyColumn(
             Modifier.fillMaxSize(),
             contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding() + 32.dp),
         ) {
-            item { Section("Résumés par IA, sur le téléphone") }
-            item {
-                Text(
-                    "Le modèle tourne entièrement sur ton téléphone : aucun article n'est envoyé sur internet. " +
-                        "Il se télécharge une seule fois, en Wi-Fi.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-            }
-            (vm.models + customModels).forEach { model ->
-                item(key = "model-${model.id}") {
-                    ModelCard(vm, model, installed = model.id in installed, selected = s.selectedModelId == model.id)
-                }
-            }
-            item(key = "import-custom") {
-                Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                    TextButton(onClick = { customLauncher.launch(arrayOf("*/*")) }) { Text("Importer un autre modèle (.litertlm)…") }
-                    Text(
-                        "Tout modèle au format LiteRT-LM, par exemple ceux de huggingface.co/litert-community, " +
-                            "copié sur le téléphone. Les fichiers GGUF et safetensors ne sont pas lisibles par ce moteur.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            item {
-                SwitchRow(
-                    "Préparer les résumés pendant la recharge",
-                    "Résume à l'avance les nouveaux articles quand le téléphone est branché.",
-                    s.prepareSummaries,
-                    vm::setPrepareSummaries,
-                )
-            }
-            item {
-                SwitchRow(
-                    "Utiliser la puce graphique (GPU) · expérimental",
-                    when {
-                        vm.gpuCrashed -> "Désactivé automatiquement (plantage ou démarrage trop lent). Réactive pour réessayer."
-                        vm.backendName != null -> "Moteur actuel : ${if (vm.backendName == "GPU") "puce graphique" else "processeur"}"
-                        else -> "Peut accélérer certains téléphones, mais le premier chargement peut être très long. " +
-                            "Par défaut, le processeur est utilisé."
-                    },
-                    s.useGpu && !vm.gpuCrashed,
-                    vm::setUseGpu,
-                )
-            }
-
-            item { Section("Traduction") }
-            item {
-                SwitchRow(
-                    "Traduire automatiquement en français",
-                    "Titres et extraits dans le fil, et articles à l'ouverture.",
-                    s.autoTranslate,
-                    vm::setAutoTranslate,
-                )
-            }
-            item {
-                SwitchRow(
-                    "Traduire les articles avec l'IA",
-                    "Traduction bien plus naturelle, faite par le modèle de résumé, partie par partie " +
-                        "(1 à 2 minutes par article). Les titres du fil restent traduits instantanément.",
-                    s.aiTranslation,
-                    vm::setAiTranslation,
-                )
-            }
-            item {
-                SwitchRow(
-                    "Télécharger les langues seulement en Wi-Fi",
-                    "Chaque langue pèse environ 30 Mo.",
-                    s.translateWifiOnly,
-                    vm::setTranslateWifiOnly,
-                )
-            }
-            item {
-                Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("Langues installées", style = MaterialTheme.typography.titleSmall)
-                    if (languages.isEmpty()) {
-                        Text(
-                            "Aucune pour l'instant. Elles s'installent toutes seules quand un article étranger arrive.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            when {
+                searching -> {
+                    val q = com.asawaaah.fil.ui.reader.ArticleSearch.fold(query.trim())
+                    val results = if (q.length < 2) emptyList() else searchIndex.filter {
+                        com.asawaaah.fil.ui.reader.ArticleSearch.fold(it.title + " " + it.words + " " + it.page.title).contains(q)
+                    }
+                    if (q.length >= 2 && results.isEmpty()) {
+                        item { Hint("Aucun réglage ne correspond à « ${query.trim()} ».") }
+                    }
+                    items(results, key = { it.title }) { r ->
+                        ListItem(
+                            modifier = Modifier.clickable {
+                                searching = false
+                                query = ""
+                                pageName = r.page.name
+                            },
+                            headlineContent = { Text(r.title) },
+                            supportingContent = { Text(r.page.title) },
+                            trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) },
                         )
                     }
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        languages.forEach { code ->
-                            InputChip(
-                                selected = false,
-                                onClick = { vm.deleteLanguage(code) },
-                                label = { Text(Languages.name(code)) },
-                                trailingIcon = { Icon(Icons.Default.Close, "Supprimer") },
-                            )
+                }
+
+                page == null -> {
+                    val followed = feeds.count { it.feed.notify }
+                    val menu = listOf(
+                        Triple(Page.APPARENCE, Icons.Outlined.Palette, listOf(
+                            when (s.theme) { ThemeMode.SYSTEM -> "Thème du système"; ThemeMode.LIGHT -> "Clair"; ThemeMode.DARK -> "Sombre" },
+                            if (s.glass == GlassMode.LIQUID) "Liquid Glass" else "Barres opaques",
+                            "texte ${(s.textScale * 100).toInt()} %",
+                        ).joinToString(" · ")),
+                        Triple(Page.FIL, Icons.AutoMirrored.Outlined.Article, listOf(
+                            if (s.compactFeed) "Compact" else "Normal",
+                            if (s.groupBySource) "regroupé par source" else "non regroupé",
+                            when (s.refreshHours) { 0 -> "actualisation manuelle"; 1 -> "toutes les heures"; else -> "toutes les ${s.refreshHours} h" },
+                        ).joinToString(" · ")),
+                        Triple(Page.MASQUER, Icons.Outlined.VisibilityOff, listOfNotNull(
+                            s.hiddenTopics.map { com.asawaaah.fil.data.topics.Topics.label(it) }.sorted().joinToString(", ").ifEmpty { null },
+                            filters.size.takeIf { it > 0 }?.let { "$it mot${if (it > 1) "s" else ""}-clé${if (it > 1) "s" else ""}" },
+                        ).joinToString(" · ").ifEmpty { "Rien de masqué" }),
+                        Triple(Page.TRADUCTION, Icons.Default.Translate, listOf(
+                            if (s.autoTranslate) "Automatique" else "À la demande",
+                            if (s.aiTranslation) "par l'IA" else null,
+                            "${languages.size} langue${if (languages.size > 1) "s" else ""}",
+                        ).filterNotNull().joinToString(" · ")),
+                        Triple(Page.IA, Icons.Default.AutoAwesome,
+                            (selectedModel?.name ?: "Aucun modèle") + if (selectedModel != null && selectedModel.id in installed) " · installé" else " · à télécharger"),
+                        Triple(Page.AUDIO, Icons.Outlined.Headphones, "Vitesse ${rateLabel(s.readAloudRate)}"),
+                        Triple(Page.NOTIFICATIONS, Icons.Outlined.Notifications,
+                            if (followed == 0) "Aucune source suivie" else "$followed source${if (followed > 1) "s" else ""} suivie${if (followed > 1) "s" else ""}"),
+                        Triple(Page.ABONNEMENTS, Icons.Outlined.RssFeed, "${feeds.size} sources · importer / exporter OPML"),
+                        Triple(Page.A_PROPOS, Icons.Outlined.Info, "Fil ${com.asawaaah.fil.BuildConfig.VERSION_NAME}"),
+                    )
+                    items(menu, key = { it.first.name }) { (p, icon, summary) ->
+                        ListItem(
+                            modifier = Modifier.clickable { pageName = p.name },
+                            leadingContent = { Icon(icon, null, tint = MaterialTheme.colorScheme.primary) },
+                            headlineContent = { Text(p.title, style = MaterialTheme.typography.titleMedium) },
+                            supportingContent = { Text(summary, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+                            trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) },
+                        )
+                    }
+                }
+
+                page == Page.APPARENCE -> {
+                    item { ThemeRow(s, vm) }
+                    item { GlassRow(s, vm) }
+                    item {
+                        Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                            Text("Taille du texte des articles : ${(s.textScale * 100).toInt()} %", style = MaterialTheme.typography.titleSmall)
+                            Slider(value = s.textScale, onValueChange = vm::setTextScale, valueRange = 0.8f..1.6f, steps = 7)
+                        }
+                    }
+                    item { SwitchRow("Police avec empattement", "Style livre pour la lecture des articles.", s.serif, vm::setSerif) }
+                }
+
+                page == Page.FIL -> {
+                    item { ChoiceRow("Affichage", listOf(false to "Normal", true to "Compact"), s.compactFeed, vm::setCompactFeed) }
+                    item {
+                        SwitchRow(
+                            "Regrouper par source",
+                            "Dès 3 articles d'une même source dans la journée, ils forment une pile à déplier.",
+                            s.groupBySource,
+                            vm::setGroupBySource,
+                        )
+                    }
+                    item {
+                        ChoiceRow(
+                            "Actualisation automatique",
+                            listOf(0 to "Manuelle", 1 to "1 h", 3 to "3 h", 6 to "6 h", 12 to "12 h"),
+                            s.refreshHours,
+                            vm::setRefreshHours,
+                        )
+                    }
+                    item {
+                        ChoiceRow("Garder les articles", listOf(7 to "7 j", 30 to "30 j", 90 to "90 j", 365 to "1 an"), s.keepDays, vm::setKeepDays)
+                    }
+                    item { Hint("Les articles « À lire plus tard » sont toujours gardés.") }
+                }
+
+                page == Page.MASQUER -> {
+                    item {
+                        ListItem(
+                            modifier = Modifier.clickable(onClick = onOpenTopics),
+                            headlineContent = { Text("Sujets masqués") },
+                            supportingContent = {
+                                Text(
+                                    if (s.hiddenTopics.isEmpty()) {
+                                        "Aucun. Choisis les sujets à ne plus voir (le foot, les people…)."
+                                    } else {
+                                        s.hiddenTopics.map { com.asawaaah.fil.data.topics.Topics.label(it) }.sorted().joinToString(", ")
+                                    },
+                                )
+                            },
+                            trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) },
+                        )
+                    }
+                    item { FiltersEditor(filters.map { it.id to it.keyword }, vm::addFilter, vm::removeFilter) }
+                    item { Hint("Astuce : un appui long sur un article permet aussi de masquer son sujet.") }
+                }
+
+                page == Page.TRADUCTION -> {
+                    item { SwitchRow("Traduire automatiquement en français", "Titres et extraits dans le fil, et articles à l'ouverture.", s.autoTranslate, vm::setAutoTranslate) }
+                    item {
+                        SwitchRow(
+                            "Traduire les articles avec l'IA",
+                            "Traduction bien plus naturelle, faite par le modèle de résumé, partie par partie " +
+                                "(1 à 2 minutes par article). Les titres du fil restent traduits instantanément.",
+                            s.aiTranslation,
+                            vm::setAiTranslation,
+                        )
+                    }
+                    item {
+                        Advanced {
+                            SwitchRow("Télécharger les langues seulement en Wi-Fi", "Chaque langue pèse environ 30 Mo.", s.translateWifiOnly, vm::setTranslateWifiOnly)
+                            InstalledLanguages(languages, vm::deleteLanguage)
                         }
                     }
                 }
-            }
 
-            item { Section("Lecture") }
-            item { ThemeRow(s, vm) }
-            item { GlassRow(s, vm) }
-            item {
-                Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    Text("Taille du texte : ${(s.textScale * 100).toInt()} %", style = MaterialTheme.typography.titleSmall)
-                    Slider(value = s.textScale, onValueChange = vm::setTextScale, valueRange = 0.8f..1.6f, steps = 7)
+                page == Page.IA -> {
+                    item {
+                        Hint(
+                            "Le modèle tourne entièrement sur ton téléphone : aucun article n'est envoyé sur internet. " +
+                                "Il se télécharge une seule fois.",
+                        )
+                    }
+                    (vm.models + customModels).forEach { model ->
+                        item(key = "model-${model.id}") {
+                            ModelCard(vm, model, installed = model.id in installed, selected = s.selectedModelId == model.id)
+                        }
+                    }
+                    item {
+                        SwitchRow(
+                            "Préparer les résumés pendant la recharge",
+                            "Résume à l'avance les nouveaux articles quand le téléphone est branché.",
+                            s.prepareSummaries,
+                            vm::setPrepareSummaries,
+                        )
+                    }
+                    item {
+                        Advanced {
+                            SwitchRow(
+                                "Utiliser la puce graphique (GPU) · expérimental",
+                                when {
+                                    vm.gpuCrashed -> "Désactivé automatiquement (plantage ou démarrage trop lent). Réactive pour réessayer."
+                                    vm.backendName != null -> "Moteur actuel : ${if (vm.backendName == "GPU") "puce graphique" else "processeur"}"
+                                    else -> "Peut accélérer certains téléphones, mais le premier chargement peut être très long. " +
+                                        "Par défaut, le processeur est utilisé."
+                                },
+                                s.useGpu && !vm.gpuCrashed,
+                                vm::setUseGpu,
+                            )
+                            Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                                TextButton(onClick = { customLauncher.launch(arrayOf("*/*")) }) { Text("Importer un autre modèle (.litertlm)…") }
+                                Text(
+                                    "Tout modèle au format LiteRT-LM, par exemple ceux de huggingface.co/litert-community, " +
+                                        "copié sur le téléphone. Les fichiers GGUF et safetensors ne sont pas lisibles par ce moteur.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
                 }
-            }
-            item { SwitchRow("Police avec empattement", "Style livre pour la lecture des articles.", s.serif, vm::setSerif) }
 
-            item { Section("Fil") }
-            item {
-                ListItem(
-                    modifier = Modifier.clickable(onClick = onOpenTopics),
-                    headlineContent = { Text("Sujets masqués") },
-                    supportingContent = {
-                        Text(
-                            if (s.hiddenTopics.isEmpty()) {
-                                "Aucun. Choisis les sujets à ne plus voir (le foot, les people…)."
-                            } else {
-                                s.hiddenTopics.map { com.asawaaah.fil.data.topics.Topics.label(it) }.sorted().joinToString(", ")
+                page == Page.AUDIO -> {
+                    item {
+                        ChoiceRow(
+                            "Vitesse de lecture par défaut",
+                            listOf(0.8f, 1f, 1.25f, 1.5f, 2f).map { it to rateLabel(it) },
+                            s.readAloudRate,
+                            vm::setReadAloudRate,
+                        )
+                    }
+                    item {
+                        ListItem(
+                            modifier = Modifier.clickable {
+                                runCatching {
+                                    screenContext.startActivity(
+                                        android.content.Intent("com.android.settings.TTS_SETTINGS").addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                                    )
+                                }.onFailure { vm.message.value = "Réglages vocaux introuvables sur ce téléphone" }
+                            },
+                            headlineContent = { Text("Voix du téléphone") },
+                            supportingContent = { Text("Choisir le moteur vocal et installer des voix (réglages d'Android).") },
+                            trailingContent = { Icon(Icons.AutoMirrored.Filled.OpenInNew, null) },
+                        )
+                    }
+                    item {
+                        Hint(
+                            "L'article est lu tel qu'il est affiché : traduit si tu lis la traduction, sinon dans sa langue, " +
+                                "avec la voix de cette langue. La lecture continue écran éteint.",
+                        )
+                    }
+                }
+
+                page == Page.NOTIFICATIONS -> {
+                    item {
+                        Hint(
+                            when {
+                                !vm.canNotify() -> "Les notifications de Fil sont désactivées dans Android. Active-les pour être averti."
+                                s.refreshHours <= 0 -> "L'actualisation automatique est sur « Manuelle » (page Fil) : aucune notification ne partira."
+                                else -> "Une notification quand l'actualisation automatique trouve de nouveaux articles de ces sources. " +
+                                    "Pour en suivre une autre : ouvre sa fiche (appui long sur un article › Source) › « M'avertir »."
                             },
                         )
-                    },
-                )
-            }
-            item {
-                ChoiceRow(
-                    "Affichage",
-                    listOf(false to "Normal", true to "Compact"),
-                    s.compactFeed,
-                    vm::setCompactFeed,
-                )
-            }
-            item {
-                SwitchRow(
-                    "Regrouper par source",
-                    "Dès 3 articles d'une même source dans la journée, ils forment une pile à déplier.",
-                    s.groupBySource,
-                    vm::setGroupBySource,
-                )
-            }
-            item {
-                ChoiceRow(
-                    "Actualisation automatique",
-                    listOf(0 to "Manuelle", 1 to "1 h", 3 to "3 h", 6 to "6 h", 12 to "12 h"),
-                    s.refreshHours,
-                    vm::setRefreshHours,
-                )
-            }
-            item {
-                ChoiceRow(
-                    "Garder les articles",
-                    listOf(7 to "7 j", 30 to "30 j", 90 to "90 j", 365 to "1 an"),
-                    s.keepDays,
-                    vm::setKeepDays,
-                )
-            }
-            item { FiltersEditor(filters.map { it.id to it.keyword }, vm::addFilter, vm::removeFilter) }
+                    }
+                    if (!vm.canNotify()) {
+                        item {
+                            TextButton(
+                                onClick = {
+                                    screenContext.startActivity(
+                                        android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                            .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, screenContext.packageName)
+                                            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                                    )
+                                },
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                            ) { Text("Ouvrir les réglages de notification") }
+                        }
+                    }
+                    // A source switched off stays listed until the page is left, so it can be switched back on.
+                    val followedFeeds = feeds.filter { it.feed.notify || it.feed.id in shownNotify }
+                    if (followedFeeds.isEmpty()) {
+                        item { Hint("Aucune source suivie pour l'instant.") }
+                    }
+                    items(followedFeeds, key = { "notify-${it.feed.id}" }) { f ->
+                        ListItem(
+                            modifier = Modifier.toggleable(value = f.feed.notify, role = Role.Switch) {
+                                shownNotify = shownNotify + f.feed.id
+                                vm.setNotify(f.feed.id, it)
+                            },
+                            leadingContent = { com.asawaaah.fil.ui.common.SourceIcon(f.feed.iconUrl, f.feed.title, size = 28.dp) },
+                            headlineContent = { Text(f.feed.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            trailingContent = { Switch(checked = f.feed.notify, onCheckedChange = null) },
+                        )
+                    }
+                }
 
-            item { Section("Abonnements") }
-            item {
-                ListItem(
-                    headlineContent = { Text("Importer un fichier OPML") },
-                    supportingContent = { Text("Depuis Feedly, Inoreader, NetNewsWire, Feeder…") },
-                    modifier = Modifier.clickable(onClick = onImportOpml),
-                )
+                page == Page.ABONNEMENTS -> {
+                    item {
+                        ListItem(
+                            modifier = Modifier.clickable(onClick = onImportOpml),
+                            leadingContent = { Icon(Icons.Default.FileUpload, null) },
+                            headlineContent = { Text("Importer un fichier OPML") },
+                            supportingContent = { Text("Depuis Feedly, Inoreader, NetNewsWire, Feeder…") },
+                        )
+                    }
+                    item {
+                        ListItem(
+                            modifier = Modifier.clickable { exportLauncher.launch("fil-abonnements.opml") },
+                            leadingContent = { Icon(Icons.Default.FileDownload, null) },
+                            headlineContent = { Text("Exporter mes abonnements (OPML)") },
+                            supportingContent = { Text("${feeds.size} sources, dossiers compris : une sauvegarde, ou pour changer d'app.") },
+                        )
+                    }
+                }
+
+                page == Page.A_PROPOS -> {
+                    item {
+                        Hint(
+                            "Fil ${com.asawaaah.fil.BuildConfig.VERSION_NAME}\n\n" +
+                                "Aucun compte, aucun serveur : tes abonnements, la traduction, les résumés et la lecture audio " +
+                                "restent sur ce téléphone. Seuls les flux, les pages d'articles et les fichiers de modèles et de " +
+                                "langues sont téléchargés.\n\n" +
+                                "Propriétaires des médias : " + com.asawaaah.fil.data.MediaOwners.ATTRIBUTION,
+                        )
+                    }
+                }
             }
-            item {
-                Text(
-                    "L'export OPML se trouve dans l'onglet Sources.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-            }
-            item { Section("À propos") }
-            item {
-                Text(
-                    "Fil ${com.asawaaah.fil.BuildConfig.VERSION_NAME} · Aucun compte, aucun serveur : tes abonnements, la traduction et les résumés restent sur ce téléphone.\n\n" +
-                        "Propriétaires des médias : " + com.asawaaah.fil.data.MediaOwners.ATTRIBUTION,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp),
+        }
+    }
+}
+
+private fun rateLabel(rate: Float): String =
+    (if (rate % 1f == 0f) "${rate.toInt()}" else "$rate".replace('.', ',')) + " ×"
+
+@Composable
+private fun Hint(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+    )
+}
+
+/** Technical options, folded at the bottom of their page. */
+@Composable
+private fun Advanced(content: @Composable () -> Unit) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    Column {
+        HorizontalDivider(Modifier.padding(top = 12.dp))
+        ListItem(
+            modifier = Modifier.clickable(onClickLabel = if (open) "Replier" else "Déplier") { open = !open },
+            headlineContent = { Text("Avancé", style = MaterialTheme.typography.titleSmall) },
+            trailingContent = { Icon(if (open) Icons.Default.ExpandLess else Icons.Default.ExpandMore, null) },
+        )
+        if (open) content()
+    }
+}
+
+@Composable
+private fun InstalledLanguages(languages: List<String>, onDelete: (String) -> Unit) {
+    Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("Langues installées", style = MaterialTheme.typography.titleSmall)
+        if (languages.isEmpty()) {
+            Text(
+                "Aucune pour l'instant. Elles s'installent toutes seules quand un article étranger arrive.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            languages.forEach { code ->
+                InputChip(
+                    selected = false,
+                    onClick = { onDelete(code) },
+                    label = { Text(Languages.name(code)) },
+                    trailingIcon = { Icon(Icons.Default.Close, "Supprimer") },
                 )
             }
         }
     }
+}
+
+@Composable
+private fun SettingsSearchField(query: String, onChange: (String) -> Unit) {
+    val focus = remember { androidx.compose.ui.focus.FocusRequester() }
+    LaunchedEffect(Unit) { focus.requestFocus() }
+    androidx.compose.foundation.text.BasicTextField(
+        value = query,
+        onValueChange = onChange,
+        singleLine = true,
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+        cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
+        modifier = Modifier.fillMaxWidth().focusRequester(focus).semantics { contentDescription = "Rechercher un réglage" },
+        decorationBox = { inner ->
+            Box(contentAlignment = Alignment.CenterStart) {
+                if (query.isEmpty()) {
+                    Text("Rechercher un réglage…", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                inner()
+            }
+        },
+    )
 }
 
 @Composable

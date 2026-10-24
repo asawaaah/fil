@@ -125,6 +125,33 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
 
     fun removeFilter(id: Long) = edit { c.db.filterDao().delete(id) }
 
+    /** All sources, for the notifications page (followed ones first) and the subscriptions summary. */
+    val feeds: StateFlow<List<com.asawaaah.fil.data.db.FeedWithCount>> =
+        c.db.feedDao().observeWithCounts().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun setNotify(feedId: Long, v: Boolean) = edit { c.db.feedDao().setNotify(feedId, v) }
+
+    fun canNotify(): Boolean = com.asawaaah.fil.work.NewArticleNotifier(c.appContext).canPost()
+
+    fun setReadAloudRate(v: Float) = edit {
+        c.settings.setReadAloudRate(v)
+        // Applies at once if nothing is being read (else on the next article).
+        if (c.readAloud.state.value.articleId == null) c.readAloud.setRate(v)
+    }
+
+    fun exportOpml(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            val ok = runCatching {
+                val text = c.feedRepository.exportOpml()
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    context.contentResolver.openOutputStream(uri)?.use { it.write(text.toByteArray(Charsets.UTF_8)) }
+                        ?: error("Fichier inaccessible")
+                }
+            }.isSuccess
+            message.value = if (ok) "Abonnements exportés" else "L'export a échoué"
+        }
+    }
+
     fun consumeMessage() {
         message.value = null
     }
