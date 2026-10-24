@@ -337,6 +337,7 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                     )
                     val meta = listOfNotNull(article.author, TimeFormat.full(article.publishedAt)).joinToString(" · ")
                     Text(meta, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    state.ownership?.let { com.asawaaah.fil.ui.common.OwnerFlair(it) }
                 }
             }
             item(key = "actions") {

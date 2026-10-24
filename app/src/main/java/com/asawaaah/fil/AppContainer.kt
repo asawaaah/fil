@@ -64,6 +64,9 @@ class AppContainer(context: Context) {
 
     val pendingAction = MutableStateFlow<PendingAction?>(null)
 
+    /** Who owns the French media (data bundled with the app). */
+    val mediaOwners by lazy { com.asawaaah.fil.data.MediaOwners.load(appContext) }
+
     /** Reading articles aloud with the phone's voice. */
     val readAloud by lazy { com.asawaaah.fil.ai.ReadAloud(appContext) }
 

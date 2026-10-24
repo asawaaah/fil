@@ -259,7 +259,8 @@ fun SettingsScreen(onImportOpml: () -> Unit) {
             item { Section("À propos") }
             item {
                 Text(
-                    "Fil 0.1 · Aucun compte, aucun serveur : tes abonnements, la traduction et les résumés restent sur ce téléphone.",
+                    "Fil ${com.asawaaah.fil.BuildConfig.VERSION_NAME} · Aucun compte, aucun serveur : tes abonnements, la traduction et les résumés restent sur ce téléphone.\n\n" +
+                        "Propriétaires des médias : " + com.asawaaah.fil.data.MediaOwners.ATTRIBUTION,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 16.dp),

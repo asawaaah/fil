@@ -74,6 +74,8 @@ data class ReaderState(
     val translatedByAi: Boolean = false,
     val aiError: String? = null,
     val summary: SummaryUi = SummaryUi.Hidden,
+    /** Owners of the source, when it is a known French media. */
+    val ownership: com.asawaaah.fil.data.MediaOwnership? = null,
 ) {
     val showTranslated: Boolean
         get() = (translation is TranslationUi.Translated || translation is TranslationUi.AiWorking) && translatedBlocks != null
@@ -141,7 +143,8 @@ class ReaderViewModel(private val c: AppContainer, private val articleId: Long) 
         val stored = c.db.articleDao().getById(articleId) ?: return@launch
         val article = stored.copy(lang = c.translationService.detectAndStore(stored))
         val feed = c.db.feedDao().getById(article.feedId)
-        _state.update { it.copy(article = article, feed = feed) }
+        val ownership = withContext(Dispatchers.Default) { c.mediaOwners.lookup(feed?.siteUrl, feed?.url, article.url) }
+        _state.update { it.copy(article = article, feed = feed, ownership = ownership) }
         if (!article.isRead) c.articleRepository.setRead(article.id, true)
 
         // Show any cached summary right away.

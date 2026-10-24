@@ -88,6 +88,8 @@ class SourceSheetViewModel(private val c: AppContainer, private val feedId: Long
 
     fun canNotify(): Boolean = NewArticleNotifier(c.appContext).canPost()
 
+    fun ownership(f: FeedEntity) = c.mediaOwners.lookup(f.siteUrl, f.url)
+
     private fun edit(block: suspend () -> Unit) {
         viewModelScope.launch { block() }
     }
@@ -182,6 +184,9 @@ fun SourceSheet(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+            }
+            remember(f.siteUrl, f.url) { vm.ownership(f) }?.let {
+                com.asawaaah.fil.ui.common.OwnerFlair(it, Modifier.padding(horizontal = 24.dp))
             }
             f.lastError?.let {
                 Text(

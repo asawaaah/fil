@@ -1,0 +1,240 @@
+# Propriétaires des médias français, par domaine web. Généré par tools/build-owners.mjs.
+# Données : « Médias français, qui possède quoi », Le Monde diplomatique et Acrimed (ODC-By), 2026-10-24 ; domaines : « Qui possède les médias », Design & Human (MIT).
+M	6ter	P:Famille Mohn|P:Rodolphe Saadé	Famille Mohn › (contrôle) Bertelsmann › (75 %) RTL Group › (48 %) Groupe M6 › (100 %) 6ter|Rodolphe Saadé › (73 %) CMA CGM › (10 %) Groupe M6 › (100 %) 6ter	6ter.fr	mdiplo
+M	20 Minutes	O:Sofiouest|P:Famille Hurbain|O:Crédit Agricole	Sofiouest › (50 %) 20 Minutes|Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (49 %) 20 Minutes|Crédit Agricole › (25 %) Groupe Rossel La Voix › (49 %) 20 Minutes	20minutes.fr	mdiplo
+M	ARC Info	O:ESH Médias	ESH Médias › (100 %) ARC Info	arcinfo.fr	mdiplo
+M	Arte	O:République fédérale d’Allemagne|O:République française	République fédérale d’Allemagne › (contrôle) ARD / ZDF › (100 %) Arte Deutschland TV GmbH › (50 %) Arte|République française › (contrôle) Arte France › (50 %) Arte	arte.tv	mdiplo
+M	Aujourd’hui en France	P:Bernard Arnault	Bernard Arnault › (47 %) LVMH › (100 %) Groupe Les Échos - Le Parisien › (100 %) Aujourd’hui en France	aujourdhui-en-france.fr	mdiplo
+M	BFM Business	P:Rodolphe Saadé	Rodolphe Saadé › (73 %) CMA CGM › (100 %) BFM Business	bfmbusiness.fr	mdiplo
+M	BFM TV	P:Rodolphe Saadé	Rodolphe Saadé › (73 %) CMA CGM › (100 %) BFM TV	bfmtv.com	mdiplo
+M	Bretagne magazine	P:Édouard Coudurier	Édouard Coudurier › (contrôle) Groupe Télégramme › (50 %) Bretagne magazine	bretagnemagazine.fr	mdiplo
+M	Canal +	P:Vincent Bolloré	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (100 %) Groupe Canal+ › (100 %) Canal +	canal.fr	mdiplo
+M	Capital	P:Vincent Bolloré	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (100 %) Prisma Media › (100 %) Capital	capital.fr	mdiplo
+M	Centre Presse	P:Famille Saint-Cricq|O:Fondation Varenne	Famille Saint-Cricq › (15 %) Groupe NRCO › (100 %) Centre Presse|Fondation Varenne › (50 %) Groupe La Montagne › (16 %) Groupe NRCO › (100 %) Centre Presse	centre-presse.fr	mdiplo
+M	Centre Presse Aveyron	P:Famille Baylet	Famille Baylet › (68 %) Groupe La Dépêche › (100 %) Les Journaux du midi › (100 %) Centre Presse Aveyron	centrepresseaveyron.fr	mdiplo
+M	Challenges	P:Claude Perdriel|P:Bernard Arnault|O:République française	Claude Perdriel › (contrôle) Groupe Perdriel › (100 %) Challenges|Bernard Arnault › (47 %) LVMH › (40 %) Groupe Perdriel › (100 %) Challenges|République française › (15 %) Renault › (0 %) Groupe Perdriel › (100 %) Challenges	challenges.fr	mdiplo
+M	Charente Libre	P:Famille Lemoine	Famille Lemoine › (80 %) Groupe Sud Ouest France › (100 %) Charente Libre	charentelibre.fr	mdiplo
+M	Chérie 25	P:Famille Baudecroux	Famille Baudecroux › (79,10 %) NRJ Group › (100 %) Chérie 25	cherie25.fr	mdiplo
+M	Chérie FM	P:Famille Baudecroux	Famille Baudecroux › (79,10 %) NRJ Group › (100 %) Chérie FM	cheriefm.fr	mdiplo
+M	CNews	P:Vincent Bolloré	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (100 %) Groupe Canal+ › (100 %) CNews	cnews.fr	mdiplo
+M	Corse Matin	P:Rodolphe Saadé|P:Ayant droit de Bernard Tapie	Rodolphe Saadé › (73 %) CMA CGM › (100 %) Groupe La Provence › (100 %) Corse Matin|Ayant droit de Bernard Tapie › (0 %) Groupe La Provence › (100 %) Corse Matin	corsematin.com	mdiplo
+M	Courrier du Loiret	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) Courrier du Loiret	courrierduloiret.fr	mdiplo
+M	Courrier international	P:Xavier Niel|P:Madison Cox	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Courrier international|Xavier Niel › (contrôle) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Courrier international|Madison Cox › (100 %) Berlys Media › (27 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Courrier international	courrierinternational.com	mdiplo
+M	Courrier picard	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Courrier picard|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Courrier picard	courrier-picard.fr	mdiplo
+M	CStar	P:Vincent Bolloré	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (100 %) Groupe Canal+ › (100 %) CStar	cstar.fr	mdiplo
+M	DNA	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) DNA	dna.fr	mdiplo
+M	Dordogne Libre	P:Famille Lemoine	Famille Lemoine › (80 %) Groupe Sud Ouest France › (100 %) Dordogne Libre	dordognelibre.fr	mdiplo
+M	Elle	P:Daniel Křetínský	Daniel Křetínský › (50 %) Czech Media Invest › (100 %) Elle	elle.fr	mdiplo
+M	Europe 1	P:Vincent Bolloré|O:Qatar Investment Authority|P:Arnaud Lagardère	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (63 %) Lagardère SA › (100 %) Lagardère News › (100 %) Europe 1|Qatar Investment Authority › (12,83 %) Lagardère SA › (100 %) Lagardère News › (100 %) Europe 1|Arnaud Lagardère › (11 %) Lagardère SA › (100 %) Lagardère News › (100 %) Europe 1	europe1.fr	mdiplo
+M	Europe 2	P:Vincent Bolloré|O:Qatar Investment Authority|P:Arnaud Lagardère	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (63 %) Lagardère SA › (100 %) Lagardère News › (100 %) Europe 2|Qatar Investment Authority › (12,83 %) Lagardère SA › (100 %) Lagardère News › (100 %) Europe 2|Arnaud Lagardère › (11 %) Lagardère SA › (100 %) Lagardère News › (100 %) Europe 2	europe2.fr	mdiplo
+M	Femme Actuelle	P:Vincent Bolloré	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (100 %) Prisma Media › (100 %) Femme Actuelle	femmeactuelle.fr	mdiplo
+M	Figaro Magazine	P:Famille Dassault	Famille Dassault › (100 %) Groupe Dassault › (100 %) Figaro Magazine	figaromagazine.fr	mdiplo
+M	FIP	O:République française	République française › (contrôle) Radio France › (100 %) FIP	fip.fr	mdiplo
+M	Franc-Tireur	P:Daniel Křetínský	Daniel Křetínský › (50 %) Czech Media Invest › (100 %) Franc-Tireur	franctireur.fr	mdiplo
+M	France 2	O:République française	République française › (contrôle) France Télévision › (100 %) France 2	francetvinfo.fr,france.tv	mdiplo
+M	France 3	O:République française	République française › (contrôle) France Télévision › (100 %) France 3	france3-regions.francetvinfo.fr	mdiplo
+M	France 4	O:République française	République française › (contrôle) France Télévision › (100 %) France 4	france4.fr	mdiplo
+M	France 5	O:République française	République française › (contrôle) France Télévision › (100 %) France 5	france5.fr	mdiplo
+M	France 24	O:République française	République française › (contrôle) France Médias Monde › (100 %) France 24	france24.com	mdiplo
+M	France Antilles	P:Xavier Niel	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (100 %) France Antilles|Xavier Niel › (contrôle) NJJ › (100 %) France Antilles	franceantilles.fr	mdiplo
+M	France Bleu	O:République française	République française › (contrôle) Radio France › (100 %) France Bleu	francebleu.fr	mdiplo
+M	France Catholique	P:Vincent Bolloré	Vincent Bolloré › (contrôle) Bolloré › (100 %) France Catholique	francecatholique.fr	mdiplo
+M	France Culture	O:République française	République française › (contrôle) Radio France › (100 %) France Culture	franceculture.fr	mdiplo
+M	France Guyane	P:Xavier Niel	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (100 %) France Guyane|Xavier Niel › (contrôle) NJJ › (100 %) France Guyane	franceguyane.fr	mdiplo
+M	France Info	O:République française	République française › (contrôle) France Télévision › (contrôle) France Info|République française › (contrôle) Radio France › (contrôle) France Info	franceinfo.fr	mdiplo
+M	France Inter	O:République française	République française › (contrôle) Radio France › (100 %) France Inter	radiofrance.fr,franceinter.fr	mdiplo
+M	France Musique	O:République française	République française › (contrôle) Radio France › (100 %) France Musique	francemusique.fr	mdiplo
+M	Frandroid	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) Humanoïd › (100 %) Frandroid	frandroid.fr	mdiplo
+M	Fun Radio	P:Famille Mohn|P:Rodolphe Saadé	Famille Mohn › (contrôle) Bertelsmann › (75 %) RTL Group › (48 %) Groupe M6 › (100 %) Fun Radio|Rodolphe Saadé › (73 %) CMA CGM › (10 %) Groupe M6 › (100 %) Fun Radio	funradio.fr	mdiplo
+M	Gala	P:Famille Dassault	Famille Dassault › (100 %) Groupe Dassault › (100 %) Gala	gala.fr	mdiplo
+M	Gulli	P:Famille Mohn|P:Rodolphe Saadé	Famille Mohn › (contrôle) Bertelsmann › (75 %) RTL Group › (48 %) Groupe M6 › (100 %) Gulli|Rodolphe Saadé › (73 %) CMA CGM › (10 %) Groupe M6 › (100 %) Gulli	gulli.fr	mdiplo
+M	Haute Gironde	P:Famille Lemoine	Famille Lemoine › (80 %) Groupe Sud Ouest France › (100 %) Haute Gironde	hautegironde.fr	mdiplo
+M	Haute Saintonge	P:Famille Lemoine	Famille Lemoine › (80 %) Groupe Sud Ouest France › (100 %) Haute Saintonge	hautesaintonge.fr	mdiplo
+M	Havre Dimanche	P:Famille Hurbain	Famille Hurbain › (contrôle) Groupe Rossel › (100 %) Havre Dimanche	havredimanche.fr	mdiplo
+M	Historia	P:Bernard Arnault	Bernard Arnault › (47 %) LVMH › (100 %) Groupe Les Échos - Le Parisien › (100 %) Historia	historia.fr	mdiplo
+M	HuffPost	P:Xavier Niel|P:Madison Cox|P:Matthieu Pigasse	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (85 %) HuffPost|Xavier Niel › (contrôle) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (85 %) HuffPost|Madison Cox › (100 %) Berlys Media › (27 %) Le Monde libre › (72,50 %) Groupe Le Monde › (85 %) HuffPost|Matthieu Pigasse › (78 %) Combat Solutions › (15 %) HuffPost	huffpost.fr	mdiplo
+M	i24 News	P:Patrick Drahi	Patrick Drahi › (92 %) Altice › (100 %) i24 News	i24news.fr	mdiplo
+M	Investir	P:Bernard Arnault	Bernard Arnault › (47 %) LVMH › (100 %) Groupe Les Échos - Le Parisien › (100 %) Investir	investir.fr	mdiplo
+M	Investir Magazine	P:Bernard Arnault	Bernard Arnault › (47 %) LVMH › (100 %) Groupe Les Échos - Le Parisien › (100 %) Investir Magazine	investirmagazine.fr	mdiplo
+M	Journal de Gien	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) Journal de Gien	journaldegien.fr	mdiplo
+M	L’Agefi hebdo	P:Bernard Arnault|P:Claude Perdriel|P:Famille Bettencourt|P:Ken Fisher|P:Nicolas Beytout	Bernard Arnault › Groupe L’Opinion › (100 %) L’Agefi hebdo|Claude Perdriel › Groupe L’Opinion › (100 %) L’Agefi hebdo|Famille Bettencourt › Groupe L’Opinion › (100 %) L’Agefi hebdo|Ken Fisher › Groupe L’Opinion › (100 %) L’Agefi hebdo|Nicolas Beytout › Groupe L’Opinion › (100 %) L’Agefi hebdo	lagefihebdo.fr	mdiplo
+M	L’Aisne Nouvelle	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’Aisne Nouvelle|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’Aisne Nouvelle	laisnenouvelle.fr	mdiplo
+M	L’Alsace	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) L’Alsace	lalsace.fr	mdiplo
+M	L’Avenir de l’Artois	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’Avenir de l’Artois|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’Avenir de l’Artois	lavenirdelartois.fr	mdiplo
+M	L’Echo Charitois	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) L’Echo Charitois	lechocharitois.fr	mdiplo
+M	L’Echo de la Lys	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’Echo de la Lys|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’Echo de la Lys	lechodelalys.fr	mdiplo
+M	L’Echo Républicain	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) L’Echo Républicain	lechorepublicain.fr	mdiplo
+M	L’Eclair	P:Famille Lemoine	Famille Lemoine › (80 %) Groupe Sud Ouest France › (100 %) Pyrénées Presse › (100 %) L’Eclair	leclair.fr	mdiplo
+M	L’Eclaireur du Gâtinais	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) L’Eclaireur du Gâtinais	leclaireurdugatinais.fr	mdiplo
+M	L’Essor savoyard	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’Essor savoyard|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’Essor savoyard	lessorsavoyard.fr	mdiplo
+M	L’Est républicain	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) L’Est républicain	lestrepublicain.fr	mdiplo
+M	L’Express	P:Alain Weill	Alain Weill › (100 %) L’Express	votreargent.lexpress.fr,lexpress.fr	mdiplo
+M	L’Express (Neuchâtel)	P:Philippe Hersant	Philippe Hersant › (100 %) Éditions Suisses Holding › (50 %) Groupe Filanosa › (100 %) L’Express (Neuchâtel)	lexpressneuchatel.fr	mdiplo
+M	L’histoire	P:Claude Perdriel|P:Bernard Arnault|O:République française	Claude Perdriel › (contrôle) Groupe Perdriel › (100 %) L’histoire|Bernard Arnault › (47 %) LVMH › (40 %) Groupe Perdriel › (100 %) L’histoire|République française › (15 %) Renault › (0 %) Groupe Perdriel › (100 %) L’histoire	lhistoire.fr	mdiplo
+M	L’Indépendant	P:Famille Baylet	Famille Baylet › (68 %) Groupe La Dépêche › (100 %) Les Journaux du midi › (100 %) L’Indépendant	lindependant.fr	mdiplo
+M	L’indicateur	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’indicateur|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’indicateur	lindicateur.fr	mdiplo
+M	L’Obs	P:Xavier Niel|P:Madison Cox	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (53 %) Le Monde libre › (98 %) L’Obs|Xavier Niel › (contrôle) NJJ › (53 %) Le Monde libre › (98 %) L’Obs|Madison Cox › (100 %) Berlys Media › (27 %) Le Monde libre › (98 %) L’Obs	nouvelobs.com	mdiplo
+M	L’Opinion	P:Bernard Arnault|P:Claude Perdriel|P:Famille Bettencourt|P:Ken Fisher|P:Nicolas Beytout	Bernard Arnault › Groupe L’Opinion › (100 %) L’Opinion|Claude Perdriel › Groupe L’Opinion › (100 %) L’Opinion|Famille Bettencourt › Groupe L’Opinion › (100 %) L’Opinion|Ken Fisher › Groupe L’Opinion › (100 %) L’Opinion|Nicolas Beytout › Groupe L’Opinion › (100 %) L’Opinion	lopinion.fr	mdiplo
+M	L’Union - L’Ardennais	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’Union - L’Ardennais|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) L’Union - L’Ardennais	lunionlardennais.fr	mdiplo
+M	L’Yonne Républicaine	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) L’Yonne Républicaine	lyonnerepublicaine.fr	mdiplo
+M	La Côte (Nyon)	P:Philippe Hersant	Philippe Hersant › (100 %) Éditions Suisses Holding › (50 %) Groupe Filanosa › (100 %) La Côte (Nyon)	lacotenyon.fr	mdiplo
+M	La Croix	O:Les Augustins de l’Assomption	Les Augustins de l’Assomption › (100 %) Bayard › (100 %) La Croix	la-croix.com	mdiplo
+M	La Dépêche du Bassin	P:Famille Lemoine	Famille Lemoine › (80 %) Groupe Sud Ouest France › (100 %) La Dépêche du Bassin	ladepechedubassin.fr	mdiplo
+M	La Dépêche du midi	P:Famille Baylet	Famille Baylet › (68 %) Groupe La Dépêche › (100 %) La Dépêche du midi	ladepechedumidi.fr	mdiplo
+M	La Gazette de Martigny	O:ESH Médias	ESH Médias › (100 %) La Gazette de Martigny	lagazettedemartigny.fr	mdiplo
+M	La Gazette du Comminges	P:Famille Baylet	Famille Baylet › (68 %) Groupe La Dépêche › (100 %) La Gazette du Comminges	lagazetteducomminges.fr	mdiplo
+M	La Lettre de l’Expansion	P:Famille Dassault	Famille Dassault › (100 %) Groupe Dassault › (100 %) La Lettre de l’Expansion	lalettredelexpansion.com	mdiplo
+M	La Liberté	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) La Liberté	laliberte.fr	mdiplo
+M	La Montagne	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) La Montagne	lamontagne.fr	mdiplo
+M	La Première	O:République française	République française › (contrôle) France Télévision › (100 %) La Première	lapremiere.fr	mdiplo
+M	La Provence	P:Rodolphe Saadé|P:Ayant droit de Bernard Tapie	Rodolphe Saadé › (73 %) CMA CGM › (100 %) Groupe La Provence › (100 %) La Provence|Ayant droit de Bernard Tapie › (0 %) Groupe La Provence › (100 %) La Provence	laprovence.com	mdiplo
+M	La République des Pyrénées	P:Famille Lemoine	Famille Lemoine › (80 %) Groupe Sud Ouest France › (100 %) Pyrénées Presse › (100 %) La République des Pyrénées	larepubliquedespyrenees.fr	mdiplo
+M	La République du Centre	O:Fondation Varenne|P:Famille Saint-Cricq	Fondation Varenne › (50 %) Groupe La Montagne › (70 %) La République du Centre|Fondation Varenne › (50 %) Groupe La Montagne › (16 %) Groupe NRCO › (30 %) La République du Centre|Famille Saint-Cricq › (15 %) Groupe NRCO › (30 %) La République du Centre	larepubliqueducentre.fr	mdiplo
+M	La Savoie	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) La Savoie|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) La Savoie	lasavoie.fr	mdiplo
+M	La Tribune	P:Rodolphe Saadé	Rodolphe Saadé › (73 %) CMA CGM › (100 %) La Tribune	latribune.fr	mdiplo
+M	La Tribune dimanche	P:Rodolphe Saadé	Rodolphe Saadé › (73 %) CMA CGM › (100 %) La Tribune dimanche	latribunedimanche.fr	mdiplo
+M	La Vie	P:Xavier Niel|P:Madison Cox	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) La Vie|Xavier Niel › (contrôle) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) La Vie|Madison Cox › (100 %) Berlys Media › (27 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) La Vie	lavie.fr	mdiplo
+M	La Voix du Nord	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) La Voix du Nord|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) La Voix du Nord	lavoixdunord.fr	mdiplo
+M	LCI	P:Famille Bouygues|P:Daniel Křetínský	Famille Bouygues › (24 %) Bouygues › (44 %) Groupe TF1 › (100 %) LCI|Daniel Křetínský › (5 %) Groupe TF1 › (100 %) LCI	lci.fr	mdiplo
+M	Le Berry républicain	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) Le Berry républicain	leberryrepublicain.fr	mdiplo
+M	Le Bien public	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) Le Bien public	lebienpublic.fr	mdiplo
+M	Le Dauphiné libéré	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) Le Dauphiné libéré	ledauphine.com	mdiplo
+M	Le Figaro	P:Famille Dassault	Famille Dassault › (100 %) Groupe Dassault › (100 %) Le Figaro	lefigaro.fr	mdiplo
+M	Le JDNews	P:Vincent Bolloré|O:Qatar Investment Authority|P:Arnaud Lagardère	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (63 %) Lagardère SA › (100 %) Lagardère News › (100 %) Le JDNews|Qatar Investment Authority › (12,83 %) Lagardère SA › (100 %) Lagardère News › (100 %) Le JDNews|Arnaud Lagardère › (11 %) Lagardère SA › (100 %) Lagardère News › (100 %) Le JDNews	lejdnews.fr	mdiplo
+M	Le Journal de Montreuil	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Journal de Montreuil|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Journal de Montreuil	lejournaldemontreuil.fr	mdiplo
+M	Le Journal de Sierre	O:ESH Médias	ESH Médias › (100 %) Le Journal de Sierre	lejournaldesierre.fr	mdiplo
+M	Le Journal des Flandres	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Journal des Flandres|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Journal des Flandres	lejournaldesflandres.fr	mdiplo
+M	Le Journal du centre	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) Le Journal du centre	lejournalducentre.fr	mdiplo
+M	Le Journal du dimanche	P:Vincent Bolloré|O:Qatar Investment Authority|P:Arnaud Lagardère	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (63 %) Lagardère SA › (100 %) Lagardère News › (100 %) Le Journal du dimanche|Qatar Investment Authority › (12,83 %) Lagardère SA › (100 %) Lagardère News › (100 %) Le Journal du dimanche|Arnaud Lagardère › (11 %) Lagardère SA › (100 %) Lagardère News › (100 %) Le Journal du dimanche	lejournaldudimanche.fr	mdiplo
+M	Le Journal du Médoc	P:Famille Lemoine	Famille Lemoine › (80 %) Groupe Sud Ouest France › (100 %) Le Journal du Médoc	lejournaldumedoc.fr	mdiplo
+M	Le Mensuel de Rennes	P:Édouard Coudurier	Édouard Coudurier › (contrôle) Groupe Télégramme › (100 %) Le Mensuel de Rennes	lemensuelderennes.fr	mdiplo
+M	Le Messager	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Messager|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Messager	lemessager.fr	mdiplo
+M	Le Monde	P:Xavier Niel|P:Madison Cox	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Le Monde|Xavier Niel › (contrôle) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Le Monde|Madison Cox › (100 %) Berlys Media › (27 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Le Monde	lemonde.fr	mdiplo
+M	Le Monde des religions	P:Xavier Niel|P:Madison Cox	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Le Monde des religions|Xavier Niel › (contrôle) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Le Monde des religions|Madison Cox › (100 %) Berlys Media › (27 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Le Monde des religions	lemondedesreligions.fr	mdiplo
+M	Le Monde diplomatique	O:Association Günter-Holzmann|O:Les Amis du Monde diplomatique|P:Xavier Niel|P:Madison Cox	Association Günter-Holzmann › (24,50 %) Le Monde diplomatique|Les Amis du Monde diplomatique › (24,50 %) Le Monde diplomatique|Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (51 %) Le Monde diplomatique|Xavier Niel › (contrôle) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (51 %) Le Monde diplomatique|Madison Cox › (100 %) Berlys Media › (27 %) Le Monde libre › (72,50 %) Groupe Le Monde › (51 %) Le Monde diplomatique	monde-diplomatique.fr	mdiplo
+M	Le Nouvelliste	O:ESH Médias	ESH Médias › (100 %) Le Nouvelliste	lenouvelliste.fr	mdiplo
+M	Le Parisien	P:Bernard Arnault	Bernard Arnault › (47 %) LVMH › (100 %) Groupe Les Échos - Le Parisien › (100 %) Le Parisien	leparisien.fr	mdiplo
+M	Le Parisien économie	P:Bernard Arnault	Bernard Arnault › (47 %) LVMH › (100 %) Groupe Les Échos - Le Parisien › (100 %) Le Parisien économie	leparisieneconomie.fr	mdiplo
+M	Le Parisien Week-End	P:Bernard Arnault	Bernard Arnault › (47 %) LVMH › (100 %) Groupe Les Échos - Le Parisien › (100 %) Le Parisien Week-End	leparisienweekend.fr	mdiplo
+M	Le Particulier	P:Famille Dassault	Famille Dassault › (100 %) Groupe Dassault › (100 %) Le Particulier	leparticulier.fr	mdiplo
+M	Le Pays gessien	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Pays gessien|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Pays gessien	lepaysgessien.fr	mdiplo
+M	Le Petit Bleu	P:Famille Baylet	Famille Baylet › (68 %) Groupe La Dépêche › (100 %) Le Petit Bleu	lepetitbleu.fr	mdiplo
+M	Le Phare Dunkerquois	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Phare Dunkerquois|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Phare Dunkerquois	lepharedunkerquois.fr	mdiplo
+M	Le Point	P:François Pinault	François Pinault › (57 %) Artémis › (100 %) Groupe Sebdo-Le Point › (100 %) Le Point	lepoint.fr	mdiplo
+M	Le Populaire du centre	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) Le Populaire du centre	lepopulaireducentre.fr	mdiplo
+M	Le Progrès	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) Le Progrès	leprogres.fr	mdiplo
+M	Le Républicain lorrain	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) Le Républicain lorrain	lerepublicainlorrain.fr	mdiplo
+M	Le Résistant	P:Famille Lemoine	Famille Lemoine › (80 %) Groupe Sud Ouest France › (100 %) Le Résistant	leresistant.fr	mdiplo
+M	Le Réveil de Berck	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Réveil de Berck|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Le Réveil de Berck	lereveildeberck.fr	mdiplo
+M	Le Télégramme	P:Édouard Coudurier	Édouard Coudurier › (contrôle) Groupe Télégramme › (100 %) Le Télégramme	letelegramme.fr	mdiplo
+M	Le Villefranchois	P:Famille Baylet	Famille Baylet › (68 %) Groupe La Dépêche › (100 %) Le Villefranchois	levillefranchois.fr	mdiplo
+M	Les Échos	P:Bernard Arnault	Bernard Arnault › (47 %) LVMH › (100 %) Groupe Les Échos - Le Parisien › (100 %) Les Échos	lesechos.fr	mdiplo
+M	Les Echos du Touquet	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Les Echos du Touquet|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Les Echos du Touquet	lesechosdutouquet.fr	mdiplo
+M	Les Échos Week-End	P:Bernard Arnault	Bernard Arnault › (47 %) LVMH › (100 %) Groupe Les Échos - Le Parisien › (100 %) Les Échos Week-End	lesechosweekend.fr	mdiplo
+M	Les Inrockuptibles	P:Matthieu Pigasse	Matthieu Pigasse › (78 %) Combat Solutions › (100 %) Les Inrockuptibles	lesinrocks.com	mdiplo
+M	Libération	P:Patrick Drahi	Patrick Drahi › (92 %) Altice › (contrôle) Fonds de Dotation pour une Presse Indépendante › (100 %) Libération	liberation.fr	mdiplo
+M	Liberté Dimanche	P:Famille Hurbain	Famille Hurbain › (contrôle) Groupe Rossel › (100 %) Liberté Dimanche	libertedimanche.fr	mdiplo
+M	Loopsider	P:Daniel Křetínský	Daniel Křetínský › (50 %) Czech Media Invest › (45 %) Loopsider	loopsider.fr	mdiplo
+M	Lyon Capitale	P:Christian Latouche	Christian Latouche › (100 %) Fiducial › (100 %) Lyon Capitale	lyoncapitale.fr	mdiplo
+M	M6	P:Famille Mohn|P:Rodolphe Saadé	Famille Mohn › (contrôle) Bertelsmann › (75 %) RTL Group › (48 %) Groupe M6 › (100 %) M6|Rodolphe Saadé › (73 %) CMA CGM › (10 %) Groupe M6 › (100 %) M6	6play.fr,m6.fr	mdiplo
+M	Mademoizelle	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) Humanoïd › (100 %) Mademoizelle	mademoizelle.fr	mdiplo
+M	Management	P:Vincent Bolloré	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (100 %) Prisma Media › (100 %) Management	management.fr	mdiplo
+M	Manière de voir	O:Association Günter-Holzmann|O:Les Amis du Monde diplomatique|P:Xavier Niel|P:Madison Cox	Association Günter-Holzmann › (24,50 %) Manière de voir|Les Amis du Monde diplomatique › (24,50 %) Manière de voir|Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (51 %) Manière de voir|Xavier Niel › (contrôle) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (51 %) Manière de voir|Madison Cox › (100 %) Berlys Media › (27 %) Le Monde libre › (72,50 %) Groupe Le Monde › (51 %) Manière de voir	manieredevoir.fr	mdiplo
+M	Marianne	P:Daniel Křetínský|P:Yves de Chaisemartin	Daniel Křetínský › (50 %) Czech Media Invest › (91 %) Marianne|Yves de Chaisemartin › (9 %) Marianne	marianne.net	mdiplo
+M	Midi libre	P:Famille Baylet	Famille Baylet › (68 %) Groupe La Dépêche › (100 %) Les Journaux du midi › (100 %) Midi libre	midilibre.fr	mdiplo
+M	Monaco-Matin	P:Xavier Niel	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (100 %) Monaco-Matin|Xavier Niel › (contrôle) NJJ › (100 %) Monaco-Matin	monacomatin.fr	mdiplo
+M	Monte Carlo Doualiya	O:République française	République française › (contrôle) France Médias Monde › (100 %) Monte Carlo Doualiya	montecarlodoualiya.fr	mdiplo
+M	Mouv’	O:République française	République française › (contrôle) Radio France › (100 %) Mouv’	mouv.fr	mdiplo
+M	National Geographic	P:Vincent Bolloré	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (100 %) Prisma Media › (100 %) National Geographic	nationalgeographic.fr	mdiplo
+M	Néon	P:Vincent Bolloré	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (100 %) Prisma Media › (100 %) Néon	neon.fr	mdiplo
+M	Nice-Matin	P:Xavier Niel	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (100 %) Nice-Matin|Xavier Niel › (contrôle) NJJ › (100 %) Nice-Matin	nicematin.com	mdiplo
+M	Nord éclair	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Nord éclair|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Nord éclair	nordeclair.fr	mdiplo
+M	Nord Littoral	P:Famille Hurbain|O:Crédit Agricole	Famille Hurbain › (contrôle) Groupe Rossel › (73 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Nord Littoral|Crédit Agricole › (25 %) Groupe Rossel La Voix › (96 %) La Voix du Nord SA › (100 %) Nord Littoral	nordlittoral.fr	mdiplo
+M	Normandie Dimanche	P:Famille Hurbain	Famille Hurbain › (contrôle) Groupe Rossel › (100 %) Normandie Dimanche	normandiedimanche.fr	mdiplo
+M	Nostalgie	P:Famille Baudecroux	Famille Baudecroux › (79,10 %) NRJ Group › (100 %) Nostalgie	nostalgie.fr	mdiplo
+M	Notre temps	O:Les Augustins de l’Assomption	Les Augustins de l’Assomption › (100 %) Bayard › (100 %) Notre temps	notretemps.com	mdiplo
+M	NRJ	P:Famille Baudecroux	Famille Baudecroux › (79,10 %) NRJ Group › (100 %) NRJ	nrj.fr	mdiplo
+M	NRJ 12	P:Famille Baudecroux	Famille Baudecroux › (79,10 %) NRJ Group › (100 %) NRJ 12	nrj12.fr	mdiplo
+M	Numerama	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) Humanoïd › (100 %) Numerama	numerama.fr	mdiplo
+M	Paris Match	P:Bernard Arnault	Bernard Arnault › (47 %) LVMH › (100 %) Paris Match	parismatch.com	mdiplo
+M	Paris-Normandie	P:Famille Hurbain	Famille Hurbain › (contrôle) Groupe Rossel › (100 %) Paris-Normandie	paris-normandie.fr	mdiplo
+M	Paris-Turf	P:Xavier Niel	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (100 %) Paris-Turf|Xavier Niel › (contrôle) NJJ › (100 %) Paris-Turf	paristurf.fr	mdiplo
+M	Pays Roannais	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) Pays Roannais	paysroannais.fr	mdiplo
+M	Pèlerin	O:Les Augustins de l’Assomption	Les Augustins de l’Assomption › (100 %) Bayard › (100 %) Pèlerin	pelerin.com	mdiplo
+M	Point de vue	P:François Pinault	François Pinault › (57 %) Artémis › (100 %) Point de vue	pointdevue.fr	mdiplo
+M	Prier	P:Xavier Niel|P:Madison Cox	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Prier|Xavier Niel › (contrôle) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Prier|Madison Cox › (100 %) Berlys Media › (27 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Prier	prier.fr	mdiplo
+M	Public Sénat	O:République française	République française › (100 %) Public Sénat	publicsenat.fr	mdiplo
+M	Radio Classique	P:Bernard Arnault	Bernard Arnault › (47 %) LVMH › (100 %) Groupe Les Échos - Le Parisien › (100 %) Radio Classique	radioclassique.fr	mdiplo
+M	Radio Nova	P:Matthieu Pigasse	Matthieu Pigasse › (78 %) Combat Solutions › (100 %) Radio Nova	radionova.fr	mdiplo
+M	Régional de Cosne	O:Fondation Varenne	Fondation Varenne › (50 %) Groupe La Montagne › (100 %) Régional de Cosne	regionaldecosne.fr	mdiplo
+M	RFM	P:Vincent Bolloré|O:Qatar Investment Authority|P:Arnaud Lagardère	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (63 %) Lagardère SA › (100 %) Lagardère News › (100 %) RFM|Qatar Investment Authority › (12,83 %) Lagardère SA › (100 %) Lagardère News › (100 %) RFM|Arnaud Lagardère › (11 %) Lagardère SA › (100 %) Lagardère News › (100 %) RFM	rfm.fr	mdiplo
+M	Rire et Chansons	P:Famille Baudecroux	Famille Baudecroux › (79,10 %) NRJ Group › (100 %) Rire et Chansons	rireetchansons.fr	mdiplo
+M	RMC	P:Rodolphe Saadé	Rodolphe Saadé › (73 %) CMA CGM › (100 %) RMC	rmc.bfmtv.com	mdiplo
+M	RMC Découverte	P:Rodolphe Saadé	Rodolphe Saadé › (73 %) CMA CGM › (100 %) RMC Découverte	rmcdecouverte.fr	mdiplo
+M	RMC Story	P:Rodolphe Saadé	Rodolphe Saadé › (73 %) CMA CGM › (100 %) RMC Story	rmcstory.fr	mdiplo
+M	RTL	P:Famille Mohn|P:Rodolphe Saadé	Famille Mohn › (contrôle) Bertelsmann › (75 %) RTL Group › (48 %) Groupe M6 › (100 %) RTL|Rodolphe Saadé › (73 %) CMA CGM › (10 %) Groupe M6 › (100 %) RTL	rtl.fr	mdiplo
+M	RTL2	P:Famille Mohn|P:Rodolphe Saadé	Famille Mohn › (contrôle) Bertelsmann › (75 %) RTL Group › (48 %) Groupe M6 › (100 %) RTL2|Rodolphe Saadé › (73 %) CMA CGM › (10 %) Groupe M6 › (100 %) RTL2	rtl2.fr	mdiplo
+M	Sciences & Avenir	P:Claude Perdriel|P:Bernard Arnault|O:République française	Claude Perdriel › (contrôle) Groupe Perdriel › (100 %) Sciences & Avenir|Bernard Arnault › (47 %) LVMH › (40 %) Groupe Perdriel › (100 %) Sciences & Avenir|République française › (15 %) Renault › (0 %) Groupe Perdriel › (100 %) Sciences & Avenir	sciencesavenir.fr	mdiplo
+M	Sept Jours à Brest	P:Édouard Coudurier	Édouard Coudurier › (contrôle) Groupe Télégramme › (100 %) Sept Jours à Brest	septjoursabrest.fr	mdiplo
+M	Slate.fr	P:Ariane de Rothschild	Ariane de Rothschild › (contrôle) Lampsane Investissement SA › (50 %) Slate.fr	slatefr.fr	mdiplo
+M	Sud Ouest	P:Famille Lemoine	Famille Lemoine › (80 %) Groupe Sud Ouest France › (100 %) Sud Ouest	sudouest.fr	mdiplo
+M	Sud Radio	P:Christian Latouche	Christian Latouche › (100 %) Fiducial › (100 %) Sud Radio	sudradio.fr	mdiplo
+M	Tébéo	P:Édouard Coudurier	Édouard Coudurier › (contrôle) Groupe Télégramme › (100 %) Tébéo	tebeo.bzh	mdiplo
+M	Tébésud	P:Édouard Coudurier	Édouard Coudurier › (contrôle) Groupe Télégramme › (100 %) Tébésud	tebesud.bzh	mdiplo
+M	Télé 7 Jours	P:Daniel Křetínský	Daniel Křetínský › (50 %) Czech Media Invest › (100 %) Télé 7 Jours	tele7jours.fr	mdiplo
+M	Télé-Loisirs	P:Vincent Bolloré	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (100 %) Prisma Media › (100 %) Télé-Loisirs	teleloisirs.fr	mdiplo
+M	Télérama	P:Xavier Niel|P:Madison Cox	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Télérama|Xavier Niel › (contrôle) NJJ › (53 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Télérama|Madison Cox › (100 %) Berlys Media › (27 %) Le Monde libre › (72,50 %) Groupe Le Monde › (100 %) Télérama	telerama.fr	mdiplo
+M	TF1	P:Famille Bouygues|P:Daniel Křetínský	Famille Bouygues › (24 %) Bouygues › (44 %) Groupe TF1 › (100 %) TF1|Daniel Křetínský › (5 %) Groupe TF1 › (100 %) TF1	tf1.fr,tf1info.fr	mdiplo
+M	TF1 Séries Films	P:Famille Bouygues|P:Daniel Křetínský	Famille Bouygues › (24 %) Bouygues › (44 %) Groupe TF1 › (100 %) TF1 Séries Films|Daniel Křetínský › (5 %) Groupe TF1 › (100 %) TF1 Séries Films	tf1seriesfilms.fr	mdiplo
+M	TV Tours	P:Famille Saint-Cricq|O:Fondation Varenne	Famille Saint-Cricq › (15 %) Groupe NRCO › (40 %) TV Tours|Fondation Varenne › (50 %) Groupe La Montagne › (16 %) Groupe NRCO › (40 %) TV Tours	tvtours.fr	mdiplo
+M	TV5 Monde	O:République française	République française › (contrôle) France Télévision › (49 %) TV5 Monde|République française › (contrôle) France Médias Monde › (13 %) TV5 Monde	tv5monde.com	mdiplo
+M	Valeurs actuelles	P:Akram Safa	Akram Safa › (100 %) Privinvest › (50 %) Groupe Valmonde › (100 %) Valeurs actuelles	valeursactuelles.com	mdiplo
+M	Var-Matin	P:Xavier Niel	Xavier Niel › (contrôle) Fonds pour l'indépendance de la presse › (100 %) NJJ › (100 %) Var-Matin|Xavier Niel › (contrôle) NJJ › (100 %) Var-Matin	varmatin.fr	mdiplo
+M	Vaucluse Matin	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) Vaucluse Matin	vauclusematin.fr	mdiplo
+M	Voici	P:Vincent Bolloré	Vincent Bolloré › (contrôle) Bolloré › (27 %) Vivendi › (100 %) Prisma Media › (100 %) Voici	voici.fr	mdiplo
+M	Vosges Matin	O:Crédit Mutuel	Crédit Mutuel › (100 %) Groupe EBRA › (100 %) Vosges Matin	vosgesmatin.fr	mdiplo
+M	VSD	P:Georges Ghosn	Georges Ghosn › (100 %) Ghosn Capital › (100 %) VSD	vsd.fr	mdiplo
+M	huffingtonpost.fr	?:Xavier Niel|?:Mathieu Pigasse		huffingtonpost.fr	qpm2021
+M	nova.fr	?:Mathieu Pigasse		nova.fr	qpm2021
+M	vice.com	?:Mathieu Pigasse		vice.com	qpm2021
+M	slate.fr	?:Ariane & Benjamin Rothschild		slate.fr	qpm2021
+M	mycanal.fr	?:Vincent Bolloré		mycanal.fr	qpm2021
+M	agefi.fr	?:François Pinault		agefi.fr	qpm2021
+M	republicain-lorrain.fr	?:la banque le Crédit Mutuel		republicain-lorrain.fr	qpm2021
+M	lejsl.com	?:la banque le Crédit Mutuel		lejsl.com	qpm2021
+M	bienpublic.com	?:EBRA|?:la banque le Crédit Mutuel		bienpublic.com	qpm2021
+M	estrepublicain.fr	?:la banque le Crédit Mutuel		estrepublicain.fr	qpm2021
+M	jhm.fr	?:la banque le Crédit Mutuel		jhm.fr	qpm2021
+M	lepopulaire.fr	?:la Fondation Varenne		lepopulaire.fr	qpm2021
+M	lyonne.fr	?:la Fondation Varenne		lyonne.fr	qpm2021
+M	leberry.fr	?:la Fondation Varenne		leberry.fr	qpm2021
+M	lejdc.fr	?:la Fondation Varenne		lejdc.fr	qpm2021
+M	larep.fr	?:la Fondation Varenne|?:la famille Saint-Cricq		larep.fr	qpm2021
+M	lanouvellerepublique.fr	?:la Fondation Varenne|?:la famille Saint-Cricq		lanouvellerepublique.fr	qpm2021
+M	lepoher.fr	?:Edouard Coudurier		lepoher.fr	qpm2021
+M	lest-eclair.fr	?:Patrick Hurbain|?:la famille Hurbain		lest-eclair.fr	qpm2021
+M	lardennais.fr	?:Patrick Hurbain|?:la famille Hurbain		lardennais.fr	qpm2021
+M	lunion.fr	?:Patrick Hurbain|?:la famille Hurbain		lunion.fr	qpm2021
+M	aisnenouvelle.fr	?:Patrick Hurbain|?:la famille Hurbain		aisnenouvelle.fr	qpm2021
+M	ladepeche.fr	?:la famille Baylet		ladepeche.fr	qpm2021
+M	petitbleu.fr	?:la famille Baylet		petitbleu.fr	qpm2021
+M	nrpyrenees.fr	?:la famille Baylet		nrpyrenees.fr	qpm2021
+M	ouest-france.fr	?:l’ASDPH|?:la famille Hutin		ouest-france.fr	qpm2021
+M	lemainelibre.fr	?:l’ASDPH|?:la famille Hutin		lemainelibre.fr	qpm2021
+M	lapressedelamanche.fr	?:l’ASDPH|?:la famille Hutin		lapressedelamanche.fr	qpm2021
+M	publihebdos.com	?:l’ASDPH|?:la famille Hutin		publihebdos.com	qpm2021
+M	presseocean.fr	?:l’ASDPH|?:la famille Hutin		presseocean.fr	qpm2021
+M	courrierdelouest.fr	?:l’ASDPH|?:la famille Hutin		courrierdelouest.fr	qpm2021
+M	virginradio.fr	?:Arnaud Lagardère|?:Qatar Investment Authority		virginradio.fr	qpm2021
+M	lejdd.fr	?:Arnaud Lagardère|?:Qatar Investment Authority		lejdd.fr	qpm2021
+M	nrj-play.fr	?:la famille Baudecroux		nrj-play.fr	qpm2021
+M	hbr.org	?:Bertelsmann|?:la famille Mohn		hbr.org	qpm2021
+M	numero23.fr	?:Patrick Drahi		numero23.fr	qpm2021
+M	larecherche.fr	?:Claude Perdriel		larecherche.fr	qpm2021
+M	nouveau-magazine-litteraire.com	?:Claude Perdriel		nouveau-magazine-litteraire.com	qpm2021
+M	sciencesetavenir.fr	?:Claude Perdriel		sciencesetavenir.fr	qpm2021
+M	rfi.fr	?:la République Française		rfi.fr	qpm2021
+M	mc-doualiya.com	?:la République Française		mc-doualiya.com	qpm2021
+M	lcp.fr	?:la République Française		lcp.fr	qpm2021
+M	yahoo.com	?:Verizon		yahoo.com	qpm2021
+M	theconversation.com	?:The Conversation Trust		theconversation.com	qpm2021
