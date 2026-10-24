@@ -33,6 +33,8 @@ Il faut Android Studio (pour son JDK et le SDK Android).
 .\build.ps1 testDebugUnitTest    # tests (parsing RSS/Atom/OPML, dates, extraction)
 ```
 
+Icône : `python tools/make-icon.py <logo-transparent.png>` régénère les calques de l'icône adaptative (logo centré dans le cercle visible, version monochrome pour les icônes à thème).
+
 Vérification avec de vrais sites (réseau requis) :
 
 ```powershell
