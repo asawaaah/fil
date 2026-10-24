@@ -147,6 +147,10 @@ interface ArticleDao {
     @Query("SELECT $LIST_COLUMNS $LIST_FROM WHERE a.isSaved = 1 ORDER BY a.publishedAt DESC")
     fun observeSaved(): Flow<List<ArticleListItem>>
 
+    /** Every stored article, for the search. */
+    @Query("SELECT $LIST_COLUMNS $LIST_FROM ORDER BY a.publishedAt DESC")
+    fun observeAll(): Flow<List<ArticleListItem>>
+
     @Query("SELECT * FROM articles WHERE id = :id")
     suspend fun getById(id: Long): ArticleEntity?
 

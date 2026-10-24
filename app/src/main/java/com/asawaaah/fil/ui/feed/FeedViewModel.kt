@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.flatMapLatest
@@ -77,6 +78,35 @@ class FeedViewModel(private val c: AppContainer, initial: ListSelection) : ViewM
      * The list split into days, with the articles of a busy source grouped (main feed and folders
      * only: a source's own page or the saved list would make no sense grouped). Null while loading.
      */
+    // ---- Search through every stored article.
+    val searchActive = MutableStateFlow(false)
+    val searchQuery = MutableStateFlow("")
+    val searchFilters = MutableStateFlow(SearchFilters())
+
+    /** Folded once when the search opens, then kept up to date with the database. */
+    private val searchIndex = searchActive.flatMapLatest { active ->
+        if (active) c.db.articleDao().observeAll().map { FeedSearch.index(it) } else flowOf(emptyList())
+    }.flowOn(Dispatchers.Default)
+
+    /** Null while the query is too short to search. */
+    @OptIn(kotlinx.coroutines.FlowPreview::class)
+    val searchResults: StateFlow<List<ArticleListItem>?> =
+        combine(searchIndex, searchQuery.debounce(120), searchFilters) { index, q, f ->
+            if (FeedSearch.words(q).isEmpty()) null else FeedSearch.search(index, q, f)
+        }
+            .flowOn(Dispatchers.Default)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    fun openSearch() {
+        searchActive.value = true
+    }
+
+    fun closeSearch() {
+        searchActive.value = false
+        searchQuery.value = ""
+        searchFilters.value = SearchFilters()
+    }
+
     /** Days whose hidden articles the user asked to see. */
     val revealedDays = MutableStateFlow<Set<java.time.LocalDate>>(emptySet())
 

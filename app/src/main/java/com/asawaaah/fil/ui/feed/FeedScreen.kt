@@ -25,6 +25,11 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import com.asawaaah.fil.data.db.FolderEntity
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -154,15 +159,35 @@ fun FeedScreen(
         vm.consumeUndoableRead()
     }
 
+    val searching by vm.searchActive.collectAsStateWithLifecycle()
+    val query by vm.searchQuery.collectAsStateWithLifecycle()
+    val searchFilters by vm.searchFilters.collectAsStateWithLifecycle()
+    val results by vm.searchResults.collectAsStateWithLifecycle()
+    androidx.activity.compose.BackHandler(enabled = searching) { vm.closeSearch() }
+
     GlassScreen(
         title = when (initial) {
             ListSelection.Main -> "Fil"
             ListSelection.Saved -> "À lire plus tard"
             else -> title
         },
-        onBack = onBack,
+        onBack = if (searching) vm::closeSearch else onBack,
         snackbar = snackbar,
+        titleContent = if (searching) {
+            { FeedSearchField(query) { vm.searchQuery.value = it } }
+        } else {
+            null
+        },
         actions = {
+            if (searching) {
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { vm.searchQuery.value = "" }) { Icon(Icons.Default.Close, "Effacer la recherche") }
+                }
+                return@GlassScreen
+            }
+            if (initial == ListSelection.Main) {
+                IconButton(onClick = vm::openSearch) { Icon(Icons.Default.Search, "Rechercher dans les articles") }
+            }
             if (initial != ListSelection.Saved) {
                 IconButton(onClick = vm::toggleUnreadOnly) {
                     Icon(
@@ -187,6 +212,20 @@ fun FeedScreen(
             }
         },
     ) { padding ->
+        if (searching) {
+            SearchResults(
+                query = query,
+                results = results,
+                filters = searchFilters,
+                onFilters = { vm.searchFilters.value = it },
+                padding = padding,
+                compact = settings.compactFeed,
+                onOpenArticle = onOpenArticle,
+                onToggleSaved = vm::toggleSaved,
+                onSetRead = vm::setRead,
+            )
+            return@GlassScreen
+        }
         PullToRefreshBox(
             isRefreshing = refreshing,
             onRefresh = { if (initial != ListSelection.Saved) vm.refresh() },
@@ -269,6 +308,106 @@ fun FeedScreen(
         }
     }
     SourceSheetHost(sheetFor, initial, onDismiss = { sheetFor = null }, onOpenFeed = onOpenFeed)
+}
+
+@Composable
+private fun FeedSearchField(query: String, onChange: (String) -> Unit) {
+    val focus = remember { androidx.compose.ui.focus.FocusRequester() }
+    LaunchedEffect(Unit) { focus.requestFocus() }
+    androidx.compose.foundation.text.BasicTextField(
+        value = query,
+        onValueChange = onChange,
+        singleLine = true,
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+        cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Search),
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focus)
+            .semantics { contentDescription = "Rechercher dans les articles" },
+        decorationBox = { inner ->
+            Box(contentAlignment = Alignment.CenterStart) {
+                if (query.isEmpty()) {
+                    Text("Rechercher un article…", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                inner()
+            }
+        },
+    )
+}
+
+/** Results of the search, newest first under day headers, with filter chips on top. */
+@Composable
+private fun SearchResults(
+    query: String,
+    results: List<ArticleListItem>?,
+    filters: SearchFilters,
+    onFilters: (SearchFilters) -> Unit,
+    padding: PaddingValues,
+    compact: Boolean,
+    onOpenArticle: (Long) -> Unit,
+    onToggleSaved: (ArticleListItem) -> Unit,
+    onSetRead: (ArticleListItem, Boolean) -> Unit,
+) {
+    val words = remember(query) { FeedSearch.words(query) }
+    val rows = remember(results) {
+        results?.let { list ->
+            val zone = java.time.ZoneId.systemDefault()
+            val today = java.time.LocalDate.now(zone)
+            list.groupBy { minOf(java.time.Instant.ofEpochMilli(it.publishedAt).atZone(zone).toLocalDate(), today) }
+        }
+    }
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding() + 16.dp),
+    ) {
+        item(key = "filters") {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                item {
+                    FilterChip(selected = filters.unreadOnly, onClick = { onFilters(filters.copy(unreadOnly = !filters.unreadOnly)) }, label = { Text("Non lus") }, shape = CapsuleShape)
+                }
+                item {
+                    FilterChip(selected = filters.savedOnly, onClick = { onFilters(filters.copy(savedOnly = !filters.savedOnly)) }, label = { Text("À lire plus tard") }, shape = CapsuleShape)
+                }
+                item {
+                    FilterChip(selected = filters.lastWeek, onClick = { onFilters(filters.copy(lastWeek = !filters.lastWeek)) }, label = { Text("7 derniers jours") }, shape = CapsuleShape)
+                }
+            }
+        }
+        item(key = "count") {
+            Text(
+                when {
+                    results == null -> "Titres, extraits et noms de sources de tous les articles gardés, traductions comprises."
+                    results.isEmpty() -> "Aucun article ne contient « ${query.trim()} »."
+                    results.size == 1 -> "1 article"
+                    else -> "${results.size} articles"
+                },
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .semantics { liveRegion = androidx.compose.ui.semantics.LiveRegionMode.Polite },
+            )
+        }
+        rows?.forEach { (day, items) ->
+            item(key = "sd:${day.toEpochDay()}") { DayHeader(FeedEntry.DayHeader(day)) }
+            items(items, key = { "s:${it.id}" }) { item ->
+                ArticleCard(
+                    item = item,
+                    showSource = true,
+                    onClick = { onOpenArticle(item.id) },
+                    onToggleSaved = { onToggleSaved(item) },
+                    onSetRead = { onSetRead(item, it) },
+                    compact = compact,
+                    highlight = words,
+                )
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+            }
+        }
+    }
 }
 
 @Composable
@@ -649,7 +788,17 @@ fun ArticleCard(
     onOpenSource: (() -> Unit)? = null,
     /** Hides one of the article's topics from the feed; null hides the menu entries. */
     onHideTopic: ((String) -> Unit)? = null,
+    /** Search words to highlight in the title and excerpt. */
+    highlight: List<String> = emptyList(),
 ) {
+    val mark = SpanStyle(
+        background = MaterialTheme.colorScheme.tertiaryContainer,
+        color = MaterialTheme.colorScheme.onTertiaryContainer,
+    )
+    fun marked(text: String): androidx.compose.ui.text.AnnotatedString = androidx.compose.ui.text.buildAnnotatedString {
+        append(text)
+        FeedSearch.ranges(text, highlight).forEach { addStyle(mark, it.first, it.last + 1) }
+    }
     val context = LocalContext.current
     var menu by remember { mutableStateOf(false) }
     val translated = item.titleFr != null
@@ -702,7 +851,7 @@ fun ArticleCard(
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    item.titleFr ?: item.title,
+                    marked(item.titleFr ?: item.title),
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = if (compact) 2 else 3,
                     overflow = TextOverflow.Ellipsis,
@@ -711,7 +860,7 @@ fun ArticleCard(
                 if (!compact && !excerpt.isNullOrBlank()) {
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        excerpt,
+                        marked(excerpt),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 2,
