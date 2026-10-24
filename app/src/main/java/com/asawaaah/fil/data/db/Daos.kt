@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 private const val LIST_COLUMNS = """
     a.id, a.feedId, a.title, a.titleFr, a.excerpt, a.excerptFr, a.imageUrl, a.url, a.publishedAt,
     a.isRead, a.isSaved, a.lang, f.title AS feedTitle, f.iconUrl AS feedIconUrl,
-    f.siteUrl AS feedSiteUrl, (c.summary IS NOT NULL) AS hasSummary
+    f.siteUrl AS feedSiteUrl, (c.summary IS NOT NULL) AS hasSummary, a.topics
 """
 
 private const val LIST_FROM = """
@@ -164,6 +164,19 @@ interface ArticleDao {
 
     @Query("UPDATE articles SET isRead = 1 WHERE id IN (:ids)")
     suspend fun markRead(ids: List<Long>)
+
+    @Query("SELECT id, url, linkUrl, title, titleFr, excerpt, categories FROM articles WHERE topicsVersion < :version LIMIT :limit")
+    suspend fun needingTopics(version: Int, limit: Int): List<TopicInput>
+
+    @Query("SELECT id, url, linkUrl, title, titleFr, excerpt, categories FROM articles WHERE id = :id")
+    suspend fun topicInput(id: Long): TopicInput?
+
+    @Query("UPDATE articles SET topics = :topics, topicsVersion = :version WHERE id = :id")
+    suspend fun setTopics(id: Long, topics: String?, version: Int)
+
+    /** Topics of recent articles, to show how many each topic has. */
+    @Query("SELECT topics FROM articles WHERE topics IS NOT NULL AND publishedAt > :since")
+    suspend fun recentTopics(since: Long): List<String>
 
     @Query("UPDATE articles SET isRead = 0 WHERE id IN (:ids)")
     suspend fun markUnread(ids: List<Long>)

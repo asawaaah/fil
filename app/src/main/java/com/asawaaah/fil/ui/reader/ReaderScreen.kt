@@ -337,7 +337,14 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                     )
                     val meta = listOfNotNull(article.author, TimeFormat.full(article.publishedAt)).joinToString(" · ")
                     Text(meta, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    state.ownership?.let { com.asawaaah.fil.ui.common.OwnerFlair(it) }
+                    androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        state.ownership?.let { com.asawaaah.fil.ui.common.OwnerFlair(it) }
+                        com.asawaaah.fil.data.topics.Topics.parse(article.topics).forEach { topic ->
+                            TopicChip(topic, hidden = com.asawaaah.fil.data.topics.Topics.isHidden(listOf(topic), settings.hiddenTopics)) {
+                                vm.setTopicHidden(topic, it)
+                            }
+                        }
+                    }
                 }
             }
             item(key = "actions") {
@@ -606,6 +613,26 @@ private fun SummaryCard(
                     TextButton(onClick = onRetry) { Text("Réessayer") }
                 }
             }
+        }
+    }
+}
+
+/** "Sujet : Football"; touching it offers to hide (or show again) the topic in the feed. */
+@Composable
+private fun TopicChip(topic: String, hidden: Boolean, onSetHidden: (Boolean) -> Unit) {
+    var menu by remember { mutableStateOf(false) }
+    val label = com.asawaaah.fil.data.topics.Topics.label(topic)
+    Box {
+        AssistChip(
+            onClick = { menu = true },
+            label = { Text(if (hidden) "Sujet : $label · masqué" else "Sujet : $label") },
+            shape = com.asawaaah.fil.ui.glass.CapsuleShape,
+        )
+        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+            DropdownMenuItem(
+                text = { Text(if (hidden) "Réafficher « $label » dans le fil" else "Masquer « $label » du fil") },
+                onClick = { menu = false; onSetHidden(!hidden) },
+            )
         }
     }
 }

@@ -98,6 +98,24 @@ data class ArticleEntity(
     val lang: String? = null,
     val titleFr: String? = null,
     val excerptFr: String? = null,
+    /** Feed categories joined by "|", kept to classify again when the dictionaries improve. */
+    val categories: String? = null,
+    /** Guessed topics, e.g. "sport.football,societe" (see [com.asawaaah.fil.data.topics.Topics]). */
+    val topics: String? = null,
+    /** [com.asawaaah.fil.data.topics.TopicClassifier.VERSION] that guessed [topics]; 0 = not yet. */
+    @ColumnInfo(defaultValue = "0")
+    val topicsVersion: Int = 0,
+)
+
+/** What the topic classifier needs from an article. */
+data class TopicInput(
+    val id: Long,
+    val url: String?,
+    val linkUrl: String?,
+    val title: String,
+    val titleFr: String?,
+    val excerpt: String?,
+    val categories: String?,
 )
 
 /** Heavy per-article data, kept out of the list queries. */
@@ -160,6 +178,7 @@ data class ArticleListItem(
     val feedIconUrl: String?,
     val feedSiteUrl: String?,
     val hasSummary: Boolean,
+    val topics: String? = null,
 )
 
 /** New article to announce in a notification. */

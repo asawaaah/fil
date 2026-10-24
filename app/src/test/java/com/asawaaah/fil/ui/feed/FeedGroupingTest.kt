@@ -13,7 +13,7 @@ class FeedGroupingTest {
     private val today = LocalDate.of(2026, 10, 23)
     private var nextId = 1L
 
-    private fun article(feedId: Long, at: LocalDateTime, read: Boolean = false) = ArticleListItem(
+    private fun article(feedId: Long, at: LocalDateTime, read: Boolean = false, topics: String? = null) = ArticleListItem(
         id = nextId++,
         feedId = feedId,
         title = "Article $nextId",
@@ -30,6 +30,7 @@ class FeedGroupingTest {
         feedIconUrl = null,
         feedSiteUrl = null,
         hasSummary = false,
+        topics = topics,
     )
 
     private fun todayAt(hour: Int, minute: Int = 0) = today.atTime(hour, minute)
@@ -40,6 +41,7 @@ class FeedGroupingTest {
             is FeedEntry.DayHeader -> "D${it.day}"
             is FeedEntry.Single -> "A${it.item.id}"
             is FeedEntry.Group -> "G${it.feedId}x${it.items.size}"
+            is FeedEntry.Hidden -> "H${it.count}" + if (it.revealed) "r" else ""
         }
     }
 
@@ -112,6 +114,37 @@ class FeedGroupingTest {
         assertEquals("des Échos", FeedGrouping.ofSource("Les Échos"))
         assertEquals("de la Croix", FeedGrouping.ofSource("La Croix"))
         assertEquals("d'Ars Technica", FeedGrouping.ofSource("Ars Technica"))
+    }
+
+    @Test
+    fun hiddenTopicsAreCountedAtTheEndOfTheirDay() {
+        val foot1 = article(1, todayAt(10), topics = "sport.football")
+        val news = article(2, todayAt(9))
+        val foot2 = article(3, todayAt(8), topics = "sport.football,societe")
+        val tennis = article(4, todayAt(7), topics = "sport.tennis")
+        val entries = FeedGrouping.build(listOf(foot1, news, foot2, tennis), false, zone, today, hiddenTopics = setOf("sport.football"))
+        assertEquals(listOf("D$today", "A${news.id}", "A${tennis.id}", "H2"), describe(entries))
+        assertEquals(listOf("sport.football"), (entries.last() as FeedEntry.Hidden).topics)
+    }
+
+    @Test
+    fun hidingSportHidesEverySportAndARevealedDayShowsThem() {
+        val foot = article(1, todayAt(10), topics = "sport.football")
+        val tennis = article(2, todayAt(9), topics = "sport.tennis")
+        val hidden = FeedGrouping.build(listOf(foot, tennis), false, zone, today, hiddenTopics = setOf("sport"))
+        assertEquals(listOf("D$today", "H2"), describe(hidden))
+        val shown = FeedGrouping.build(listOf(foot, tennis), false, zone, today, hiddenTopics = setOf("sport"), revealedDays = setOf(today))
+        assertEquals(listOf("D$today", "A${foot.id}", "A${tennis.id}", "H2r"), describe(shown))
+    }
+
+    @Test
+    fun hiddenArticlesDontCountForPiles() {
+        val items = listOf(
+            article(1, todayAt(9), topics = "sport.football"), article(1, todayAt(8), topics = "sport.football"),
+            article(1, todayAt(7)), article(1, todayAt(6)),
+        )
+        val entries = FeedGrouping.build(items, true, zone, today, hiddenTopics = setOf("sport.football"))
+        assertEquals(listOf("D$today", "A${items[2].id}", "A${items[3].id}", "H2"), describe(entries))
     }
 
     @Test

@@ -32,6 +32,8 @@ data class Settings(
     val compactFeed: Boolean = false,
     /** Speed of the voice reading articles aloud. */
     val readAloudRate: Float = 1f,
+    /** Topics left out of the feed (see Topics), e.g. "sport.football". */
+    val hiddenTopics: Set<String> = emptySet(),
     val autoTranslate: Boolean = true,
     val translateWifiOnly: Boolean = true,
     /** Translate opened articles with the on-device model (slower, better) instead of ML Kit only. */
@@ -56,6 +58,7 @@ class SettingsRepository(private val context: Context) {
         val groupBySource = booleanPreferencesKey("group_by_source")
         val compactFeed = booleanPreferencesKey("compact_feed")
         val readAloudRate = floatPreferencesKey("read_aloud_rate")
+        val hiddenTopics = androidx.datastore.preferences.core.stringSetPreferencesKey("hidden_topics")
         val autoTranslate = booleanPreferencesKey("auto_translate")
         val translateWifiOnly = booleanPreferencesKey("translate_wifi_only")
         val aiTranslation = booleanPreferencesKey("ai_translation")
@@ -81,6 +84,7 @@ class SettingsRepository(private val context: Context) {
             groupBySource = this[Keys.groupBySource] ?: d.groupBySource,
             compactFeed = this[Keys.compactFeed] ?: d.compactFeed,
             readAloudRate = this[Keys.readAloudRate] ?: d.readAloudRate,
+            hiddenTopics = this[Keys.hiddenTopics] ?: d.hiddenTopics,
             autoTranslate = this[Keys.autoTranslate] ?: d.autoTranslate,
             translateWifiOnly = this[Keys.translateWifiOnly] ?: d.translateWifiOnly,
             aiTranslation = this[Keys.aiTranslation] ?: d.aiTranslation,
@@ -100,6 +104,10 @@ class SettingsRepository(private val context: Context) {
     suspend fun setGroupBySource(v: Boolean) = context.dataStore.edit { it[Keys.groupBySource] = v }
     suspend fun setCompactFeed(v: Boolean) = context.dataStore.edit { it[Keys.compactFeed] = v }
     suspend fun setReadAloudRate(v: Float) = context.dataStore.edit { it[Keys.readAloudRate] = v }
+    suspend fun setTopicHidden(topic: String, hidden: Boolean) = context.dataStore.edit {
+        val current = it[Keys.hiddenTopics].orEmpty()
+        it[Keys.hiddenTopics] = if (hidden) current + topic else current - topic
+    }
     suspend fun setAutoTranslate(v: Boolean) = context.dataStore.edit { it[Keys.autoTranslate] = v }
     suspend fun setTranslateWifiOnly(v: Boolean) = context.dataStore.edit { it[Keys.translateWifiOnly] = v }
     suspend fun setAiTranslation(v: Boolean) = context.dataStore.edit { it[Keys.aiTranslation] = v }

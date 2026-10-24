@@ -1,6 +1,7 @@
 package com.asawaaah.fil.ui.feed
 
 import com.asawaaah.fil.data.db.ArticleListItem
+import com.asawaaah.fil.data.topics.Topics
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -24,6 +25,14 @@ sealed interface FeedEntry {
         val lead: ArticleListItem get() = items.first()
         val feedTitle: String get() = lead.feedTitle
         val unreadCount: Int get() = items.count { !it.isRead }
+    }
+
+    /**
+     * End of a day: [count] articles of hidden [topics] were set aside. [revealed]: the user asked
+     * to see them for that day (they are then in the list above).
+     */
+    data class Hidden(val day: LocalDate, val count: Int, val topics: List<String>, val revealed: Boolean) : FeedEntry {
+        override val key: String get() = "h:${day.toEpochDay()}"
     }
 
     companion object {
@@ -50,13 +59,16 @@ object FeedGrouping {
     /**
      * Splits [items] into days (newest first, each day under a header) and, when [groupBySource]
      * is on, replaces the articles of a source that published at least [MIN_GROUP] times that day
-     * by one group, placed where its newest article was.
+     * by one group, placed where its newest article was. Articles of [hiddenTopics] are left out
+     * and counted at the end of their day, except on [revealedDays].
      */
     fun build(
         items: List<ArticleListItem>,
         groupBySource: Boolean,
         zone: ZoneId = ZoneId.systemDefault(),
         today: LocalDate = LocalDate.now(zone),
+        hiddenTopics: Set<String> = emptySet(),
+        revealedDays: Set<LocalDate> = emptySet(),
     ): List<FeedEntry> {
         // Dates in the future (wrong clocks on some sites) count as today.
         fun dayOf(item: ArticleListItem) = minOf(Instant.ofEpochMilli(item.publishedAt).atZone(zone).toLocalDate(), today)
@@ -68,7 +80,11 @@ object FeedGrouping {
             val day = dayOf(sorted[start])
             var end = start
             while (end < sorted.size && dayOf(sorted[end]) == day) end++
-            val dayItems = sorted.subList(start, end)
+            val all = sorted.subList(start, end)
+            start = end
+            val hidden = if (hiddenTopics.isEmpty()) emptyList() else all.filter { Topics.isHidden(Topics.parse(it.topics), hiddenTopics) }
+            val revealed = day in revealedDays
+            val dayItems = if (hidden.isEmpty() || revealed) all else all - hidden.toSet()
             out += FeedEntry.DayHeader(day)
             if (!groupBySource) {
                 dayItems.mapTo(out) { FeedEntry.Single(it) }
@@ -83,7 +99,11 @@ object FeedGrouping {
                     }
                 }
             }
-            start = end
+            if (hidden.isNotEmpty()) {
+                val why = hidden.mapNotNull { Topics.hidingTopic(Topics.parse(it.topics), hiddenTopics) }
+                    .groupingBy { it }.eachCount().entries.sortedByDescending { it.value }.map { it.key }
+                out += FeedEntry.Hidden(day, hidden.size, why, revealed)
+            }
         }
         return out
     }

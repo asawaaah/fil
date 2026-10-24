@@ -1,5 +1,7 @@
 package com.asawaaah.fil.data.feeds
 
+import com.asawaaah.fil.data.topics.TopicClassifier
+import com.asawaaah.fil.data.topics.Topics
 import com.asawaaah.fil.data.db.ArticleEntity
 import com.asawaaah.fil.data.db.FeedEntity
 import com.asawaaah.fil.data.db.FilDatabase
@@ -150,11 +152,38 @@ class FeedRepository(
         return ids.size
     }
 
+    /** Guesses the topics of one stored article again (e.g. once its title is translated). */
+    suspend fun classify(input: com.asawaaah.fil.data.db.TopicInput) {
+        val topics = TopicClassifier.classify(
+            url = input.linkUrl ?: input.url,
+            categories = input.categories?.split('|').orEmpty(),
+            title = input.title,
+            titleFr = input.titleFr,
+            excerpt = input.excerpt,
+        )
+        articleDao.setTopics(input.id, Topics.format(topics), TopicClassifier.VERSION)
+    }
+
+    /** Articles stored before topics existed, or with older dictionaries. */
+    suspend fun classifyPending(): Int {
+        var done = 0
+        while (true) {
+            val batch = articleDao.needingTopics(TopicClassifier.VERSION, 500)
+            if (batch.isEmpty()) return done
+            batch.forEach { classify(it) }
+            done += batch.size
+        }
+    }
+
     private suspend fun storeItems(feed: FeedEntity, items: List<ParsedItem>): List<Long> {
         if (items.isEmpty()) return emptyList()
         val now = System.currentTimeMillis()
         val keepSince = now - settings.current().keepDays * DAY_MS
         val isReddit = feed.kind == FeedEntity.KIND_REDDIT
+        fun categoriesOf(item: ParsedItem) = item.categories.take(8).joinToString("|").takeIf { it.isNotEmpty() }
+        fun topicsOf(item: ParsedItem, url: String?, excerpt: String?) = Topics.format(
+            TopicClassifier.classify(url, item.categories, item.title, null, excerpt),
+        )
         val entities = items.mapIndexedNotNull { index, item ->
             // Undated items keep the feed's order.
             val published = (item.publishedAt ?: (now - index * 1000L)).coerceAtMost(now)
@@ -173,6 +202,9 @@ class FeedRepository(
                     imageUrl = item.imageUrl ?: info.imageUrl,
                     publishedAt = published,
                     fetchedAt = now,
+                    categories = categoriesOf(item),
+                    topics = topicsOf(item, info.linkUrl ?: item.url, TextUtils.excerpt(info.selfHtml)),
+                    topicsVersion = TopicClassifier.VERSION,
                 )
             } else {
                 val excerpt = TextUtils.excerpt(item.summaryHtml ?: item.contentHtml)
@@ -187,6 +219,9 @@ class FeedRepository(
                     imageUrl = item.imageUrl,
                     publishedAt = published,
                     fetchedAt = now,
+                    categories = categoriesOf(item),
+                    topics = topicsOf(item, item.url, excerpt),
+                    topicsVersion = TopicClassifier.VERSION,
                 )
             }
         }

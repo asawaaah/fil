@@ -71,6 +71,9 @@ class AppContainer(context: Context) {
     val readAloud by lazy { com.asawaaah.fil.ai.ReadAloud(appContext) }
 
     fun start() {
+        translationService.onTranslated = { feedRepository.classify(it) }
+        // Topics of articles stored by older versions (or with older dictionaries).
+        appScope.launch { runCatching { feedRepository.classifyPending() } }
         appScope.launch {
             settings.settings
                 .map { it.refreshHours to it.prepareSummaries }

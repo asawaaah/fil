@@ -125,6 +125,10 @@ class ReaderViewModel(private val c: AppContainer, private val articleId: Long) 
         )
     }
 
+    fun setTopicHidden(topic: String, hidden: Boolean) {
+        viewModelScope.launch { c.settings.setTopicHidden(topic, hidden) }
+    }
+
     fun toggleReading() = c.readAloud.toggle()
     fun nextSegment() = c.readAloud.next()
     fun previousSegment() = c.readAloud.previous()

@@ -124,6 +124,7 @@ fun FeedScreen(
     val entries by vm.entries.collectAsStateWithLifecycle()
     val expanded by vm.expandedGroups.collectAsStateWithLifecycle()
     val undoable by vm.undoableRead.collectAsStateWithLifecycle()
+    val undoableHide by vm.undoableHide.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val pullState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
@@ -134,6 +135,16 @@ fun FeedScreen(
             snackbar.showSnackbar(it)
             vm.consumeMessage()
         }
+    }
+    LaunchedEffect(undoableHide) {
+        val topic = undoableHide ?: return@LaunchedEffect
+        val result = snackbar.showSnackbar(
+            "Sujet « ${com.asawaaah.fil.data.topics.Topics.label(topic)} » masqué",
+            actionLabel = "Annuler",
+            duration = SnackbarDuration.Long,
+        )
+        if (result == SnackbarResult.ActionPerformed) vm.unhideTopic(topic)
+        vm.consumeUndoableHide()
     }
     LaunchedEffect(undoable) {
         // Cleared only once the message is gone: clearing it earlier would cancel this effect.
@@ -212,6 +223,7 @@ fun FeedScreen(
                         )
                         FeedRow.Empty -> EmptyState(initial, settings.unreadOnly, onGoToSources, onImportOpml)
                         is FeedRow.Day -> DayHeader(row.header)
+                        is FeedRow.HiddenNote -> HiddenNote(row.entry) { vm.toggleRevealed(row.entry.day) }
                         is FeedRow.Article -> {
                             val item = row.item
                             Column(if (row.inGroup) Modifier.groupMember() else Modifier) {
@@ -223,6 +235,7 @@ fun FeedScreen(
                                     onSetRead = { vm.setRead(item, it) },
                                     compact = settings.compactFeed,
                                     onOpenSource = { sheetFor = item.feedId },
+                                    onHideTopic = if (initial is ListSelection.Feed || initial == ListSelection.Saved) null else vm::hideTopic,
                                 )
                                 HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                             }
@@ -236,6 +249,7 @@ fun FeedScreen(
                             onSetRead = { item, read -> vm.setRead(item, read) },
                             compact = settings.compactFeed,
                             onOpenSource = { sheetFor = row.group.feedId },
+                            onHideTopic = vm::hideTopic,
                         )
                         is FeedRow.GroupHead -> ExpandedGroupHeader(
                             group = row.group,
@@ -288,6 +302,11 @@ private sealed interface FeedRow {
         override val contentType = "empty"
     }
 
+    data class HiddenNote(val entry: FeedEntry.Hidden) : FeedRow {
+        override val key get() = entry.key
+        override val contentType get() = "hidden"
+    }
+
     data class Day(val header: FeedEntry.DayHeader) : FeedRow {
         override val key get() = header.key
         override val contentType get() = "day"
@@ -330,6 +349,7 @@ private fun feedRows(
         else -> for (entry in entries) {
             when (entry) {
                 is FeedEntry.DayHeader -> rows += FeedRow.Day(entry)
+                is FeedEntry.Hidden -> rows += FeedRow.HiddenNote(entry)
                 is FeedEntry.Single -> rows += FeedRow.Article(entry.item, inGroup = false)
                 is FeedEntry.Group -> if (entry.key in expanded) {
                     rows += FeedRow.GroupHead(entry)
@@ -370,6 +390,29 @@ private fun FolderChips(folders: List<FolderEntity>, selection: ListSelection, o
     }
 }
 
+/** "12 articles masqués (Football) · Afficher" at the end of a day. */
+@Composable
+private fun HiddenNote(entry: FeedEntry.Hidden, onToggle: () -> Unit) {
+    val n = entry.count
+    val labels = entry.topics.take(3).joinToString(", ") { com.asawaaah.fil.data.topics.Topics.label(it) }
+    Row(
+        Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            if (entry.revealed) {
+                "$n article${if (n > 1) "s" else ""} de sujets masqués affiché${if (n > 1) "s" else ""} ($labels)"
+            } else {
+                "$n article${if (n > 1) "s" else ""} masqué${if (n > 1) "s" else ""} ($labels)"
+            },
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = onToggle) { Text(if (entry.revealed) "Masquer" else "Afficher") }
+    }
+}
+
 @Composable
 private fun DayHeader(header: FeedEntry.DayHeader) {
     Text(
@@ -407,6 +450,7 @@ private fun GroupCard(
     onSetRead: (ArticleListItem, Boolean) -> Unit,
     compact: Boolean = false,
     onOpenSource: () -> Unit = {},
+    onHideTopic: ((String) -> Unit)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(20.dp)
@@ -446,6 +490,7 @@ private fun GroupCard(
                 onSetRead = { onSetRead(group.lead, it) },
                 compact = compact,
                 onOpenSource = onOpenSource,
+                onHideTopic = onHideTopic,
             )
             previews.forEach { item ->
                 Row(
@@ -602,6 +647,8 @@ fun ArticleCard(
     compact: Boolean = false,
     /** Opens the source's panel; null hides the menu entry. */
     onOpenSource: (() -> Unit)? = null,
+    /** Hides one of the article's topics from the feed; null hides the menu entries. */
+    onHideTopic: ((String) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var menu by remember { mutableStateOf(false) }
@@ -718,6 +765,16 @@ fun ArticleCard(
             item.url?.let { url ->
                 DropdownMenuItem(text = { Text("Ouvrir dans le navigateur") }, onClick = { menu = false; openInBrowser(context, url) })
                 DropdownMenuItem(text = { Text("Partager") }, onClick = { menu = false; shareLink(context, item.titleFr ?: item.title, url) })
+            }
+            if (onHideTopic != null) {
+                val topics = com.asawaaah.fil.data.topics.Topics.parse(item.topics)
+                if (topics.isNotEmpty()) HorizontalDivider()
+                topics.forEach { t ->
+                    DropdownMenuItem(
+                        text = { Text("Masquer le sujet : ${com.asawaaah.fil.data.topics.Topics.label(t)}") },
+                        onClick = { menu = false; onHideTopic(t) },
+                    )
+                }
             }
             if (onOpenSource != null) {
                 HorizontalDivider()

@@ -125,7 +125,10 @@ fun FilNavHost(container: AppContainer) {
                     )
                 }
                 composable("settings") {
-                    SettingsScreen(onImportOpml = { nav.navigate("import") })
+                    SettingsScreen(onImportOpml = { nav.navigate("import") }, onOpenTopics = { nav.navigate("topics") })
+                }
+                composable("topics") {
+                    com.asawaaah.fil.ui.settings.TopicsScreen(onBack = { nav.popBackStack() })
                 }
                 composable("list/feed/{id}", arguments = listOf(navArgument("id") { type = NavType.LongType })) { entry ->
                     val id = entry.arguments?.getLong("id") ?: 0L

@@ -119,6 +119,9 @@ class TranslationService(
     private val connectivity: Connectivity,
     private val ai: AiTranslator,
 ) {
+    /** Called after an article's title is translated (set by the container: topics are guessed again). */
+    var onTranslated: suspend (com.asawaaah.fil.data.db.TopicInput) -> Unit = {}
+
     /**
      * Translates an article with the on-device model, chunk by chunk, starting from [base]
      * (the quick ML Kit translation, or the original). Cached per article.
@@ -203,6 +206,8 @@ class TranslationService(
                 val titleFr = translator.translate(a.title, code)
                 val excerptFr = a.excerpt?.let { translator.translate(it, code) }
                 articleDao.setTranslation(a.id, lang, titleFr, excerptFr)
+                // The French title adds clues for the topic.
+                articleDao.topicInput(a.id)?.let { onTranslated(it) }
                 translated++
             } catch (e: CancellationException) {
                 throw e

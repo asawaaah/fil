@@ -24,6 +24,8 @@ data class ParsedItem(
     val contentHtml: String?,
     val imageUrl: String?,
     val publishedAt: Long?,
+    /** Feed categories / tags, as given (often free-form on blogs). */
+    val categories: List<String> = emptyList(),
 )
 
 class NotAFeedException(message: String = "Ce n'est pas un flux RSS ou Atom valide") : Exception(message)
@@ -114,6 +116,10 @@ object FeedParser {
             contentHtml = content,
             imageUrl = imageOf(item, content ?: description, base),
             publishedAt = DateParser.parse(date),
+            categories = item.children()
+                .filter { local(it) == "category" || local(it) == "subject" }
+                .map { TextUtils.stripHtml(it.txt()).trim() }
+                .filter { it.isNotEmpty() && it.length <= 60 },
         )
     }
 
@@ -152,6 +158,10 @@ object FeedParser {
             contentHtml = content,
             imageUrl = imageOf(entry, content ?: summary, base),
             publishedAt = DateParser.parse(date),
+            categories = entry.children()
+                .filter { local(it) == "category" }
+                .map { it.attrIc("label").ifBlank { it.attrIc("term") }.trim() }
+                .filter { it.isNotEmpty() && it.length <= 60 },
         )
     }
 

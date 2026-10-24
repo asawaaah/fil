@@ -77,9 +77,26 @@ class FeedViewModel(private val c: AppContainer, initial: ListSelection) : ViewM
      * The list split into days, with the articles of a busy source grouped (main feed and folders
      * only: a source's own page or the saved list would make no sense grouped). Null while loading.
      */
+    /** Days whose hidden articles the user asked to see. */
+    val revealedDays = MutableStateFlow<Set<java.time.LocalDate>>(emptySet())
+
     val entries: StateFlow<List<FeedEntry>?> =
-        combine(items, settings.map { it.groupBySource }.distinctUntilChanged(), selection) { list, group, sel ->
-            list?.let { FeedGrouping.build(it, group && (sel == ListSelection.Main || sel is ListSelection.Folder)) }
+        combine(
+            items,
+            settings.map { it.groupBySource to it.hiddenTopics }.distinctUntilChanged(),
+            selection,
+            revealedDays,
+        ) { list, (group, hidden), sel, revealed ->
+            // Topics are hidden from the main feed and folders, not from a source's own page.
+            val mixed = sel == ListSelection.Main || sel is ListSelection.Folder
+            list?.let {
+                FeedGrouping.build(
+                    it,
+                    groupBySource = group && mixed,
+                    hiddenTopics = if (mixed) hidden else emptySet(),
+                    revealedDays = revealed,
+                )
+            }
         }
             .flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -107,6 +124,28 @@ class FeedViewModel(private val c: AppContainer, initial: ListSelection) : ViewM
                 ids,
             )
         }
+    }
+
+    fun toggleRevealed(day: java.time.LocalDate) {
+        revealedDays.value = revealedDays.value.let { if (day in it) it - day else it + day }
+    }
+
+    /** Topic just hidden from an article's menu, offered for undo. */
+    val undoableHide = MutableStateFlow<String?>(null)
+
+    fun hideTopic(topic: String) {
+        viewModelScope.launch {
+            c.settings.setTopicHidden(topic, true)
+            undoableHide.value = topic
+        }
+    }
+
+    fun unhideTopic(topic: String) {
+        viewModelScope.launch { c.settings.setTopicHidden(topic, false) }
+    }
+
+    fun consumeUndoableHide() {
+        undoableHide.value = null
     }
 
     fun undoRead(ids: List<Long>) {

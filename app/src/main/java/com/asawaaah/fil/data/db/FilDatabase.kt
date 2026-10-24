@@ -15,7 +15,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ArticleContentEntity::class,
         KeywordFilterEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = false,
 )
 abstract class FilDatabase : RoomDatabase() {
@@ -41,6 +41,14 @@ abstract class FilDatabase : RoomDatabase() {
         }
 
         /** v0.1.4: article translations made by the on-device model. */
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE articles ADD COLUMN categories TEXT")
+                db.execSQL("ALTER TABLE articles ADD COLUMN topics TEXT")
+                db.execSQL("ALTER TABLE articles ADD COLUMN topicsVersion INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         private val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE feeds ADD COLUMN notify INTEGER NOT NULL DEFAULT 0")
@@ -63,7 +71,7 @@ abstract class FilDatabase : RoomDatabase() {
 
         fun build(context: Context): FilDatabase =
             Room.databaseBuilder(context, FilDatabase::class.java, "fil.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                 .build()
     }
 }

@@ -71,7 +71,7 @@ import com.asawaaah.fil.ui.common.containerFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onImportOpml: () -> Unit) {
+fun SettingsScreen(onImportOpml: () -> Unit, onOpenTopics: () -> Unit = {}) {
     val vm: SettingsViewModel = viewModel(factory = containerFactory { SettingsViewModel(it) })
     val s by vm.settings.collectAsStateWithLifecycle()
     val installed by vm.installedModels.collectAsStateWithLifecycle()
@@ -206,6 +206,21 @@ fun SettingsScreen(onImportOpml: () -> Unit) {
             item { SwitchRow("Police avec empattement", "Style livre pour la lecture des articles.", s.serif, vm::setSerif) }
 
             item { Section("Fil") }
+            item {
+                ListItem(
+                    modifier = Modifier.clickable(onClick = onOpenTopics),
+                    headlineContent = { Text("Sujets masqués") },
+                    supportingContent = {
+                        Text(
+                            if (s.hiddenTopics.isEmpty()) {
+                                "Aucun. Choisis les sujets à ne plus voir (le foot, les people…)."
+                            } else {
+                                s.hiddenTopics.map { com.asawaaah.fil.data.topics.Topics.label(it) }.sorted().joinToString(", ")
+                            },
+                        )
+                    },
+                )
+            }
             item {
                 ChoiceRow(
                     "Affichage",
