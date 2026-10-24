@@ -100,6 +100,13 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.text.input.ImeAction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
+import com.asawaaah.fil.ui.glass.glassSurface
 import kotlinx.coroutines.withContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -127,6 +134,7 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
     val state by vm.state.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
     val aiAvailable by vm.modelInstalled.collectAsStateWithLifecycle()
+    val reading by vm.readAloud.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var textMenu by remember { mutableStateOf(false) }
     val article = state.article
@@ -168,6 +176,23 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
     val currentMatch = matches.getOrNull(current)
     val byBlock = remember(matches) { matches.groupBy { it.block } }
 
+    // Reading aloud: the block being read is marked and the page follows it, unless the user
+    // scrolls away (then a button brings it back).
+    val readingHere = article != null && reading.articleId == article.id
+    val readBlock = if (readingHere) reading.currentBlock else null
+    var follow by remember { mutableStateOf(true) }
+    val dragged by listState.interactionSource.collectIsDraggedAsState()
+    LaunchedEffect(dragged) { if (dragged && reading.playing) follow = false }
+    fun itemOfBlock(block: Int): Int {
+        val total = listState.layoutInfo.totalItemsCount
+        val item = if (block == SearchMatch.TITLE) 0 else total - (if (hasFooter) 1 else 0) - state.visibleBlocks.size + block
+        return item.coerceIn(0, (total - 1).coerceAtLeast(0))
+    }
+    LaunchedEffect(readBlock, follow) {
+        val b = readBlock ?: return@LaunchedEffect
+        if (follow && !searching) listState.animateScrollToItem(itemOfBlock(b), scrollOffset = -40)
+    }
+
     GlassScreen(
         title = state.feed?.title ?: "Article",
         onBack = onBack,
@@ -196,6 +221,38 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                 }
             }
             }
+        },
+        floating = if (readingHere) {
+            { backdrop, bottom ->
+                Column(
+                    Modifier.align(Alignment.BottomCenter).padding(bottom = bottom + 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    if (!follow && reading.playing) {
+                        FilledTonalButton(onClick = { follow = true }) { Text("Revenir au passage lu") }
+                    }
+                    ReadAloudBar(
+                        backdrop = backdrop,
+                        state = reading,
+                        onToggle = vm::toggleReading,
+                        onPrevious = vm::previousSegment,
+                        onNext = vm::nextSegment,
+                        onRate = vm::setReadingRate,
+                        onClose = vm::stopReading,
+                        onInstallVoice = {
+                            runCatching {
+                                context.startActivity(
+                                    android.content.Intent(android.speech.tts.TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
+                                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                                )
+                            }
+                        },
+                    )
+                }
+            }
+        } else {
+            null
         },
         actions = {
             if (searching) {
@@ -264,7 +321,7 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                 start = 20.dp,
                 end = 20.dp,
                 top = padding.calculateTopPadding() + 8.dp,
-                bottom = padding.calculateBottomPadding() + 48.dp,
+                bottom = padding.calculateBottomPadding() + if (readingHere) 140.dp else 48.dp,
             ),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
@@ -282,7 +339,12 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                     Text(meta, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            item(key = "actions") { ActionRow(state, vm, aiAvailable) }
+            item(key = "actions") {
+                ActionRow(state, vm, aiAvailable, listening = readingHere) {
+                    follow = true
+                    vm.listen()
+                }
+            }
             val aiWorking = state.translation as? TranslationUi.AiWorking
             if (aiWorking != null) {
                 item(key = "ai-translating") {
@@ -364,7 +426,18 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                 }
             }
             items(state.visibleBlocks.withIndex().toList(), key = { "b${it.index}" }) { (index, block) ->
-                BlockView(block, bodyStyle, byBlock[index], currentMatch, hl)
+                val beingRead = readBlock == index
+                Box(
+                    if (beingRead) {
+                        Modifier
+                            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f), RoundedCornerShape(10.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    } else {
+                        Modifier
+                    },
+                ) {
+                    BlockView(block, bodyStyle, byBlock[index], currentMatch, hl)
+                }
             }
             if (link != null) {
                 item(key = "footer") {
@@ -404,7 +477,7 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-private fun ActionRow(state: ReaderState, vm: ReaderViewModel, aiAvailable: Boolean) {
+private fun ActionRow(state: ReaderState, vm: ReaderViewModel, aiAvailable: Boolean, listening: Boolean, onListen: () -> Unit) {
     androidx.compose.foundation.layout.FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -414,6 +487,13 @@ private fun ActionRow(state: ReaderState, vm: ReaderViewModel, aiAvailable: Bool
             Icon(Icons.Default.AutoAwesome, null, Modifier.size(18.dp))
             Spacer(Modifier.width(6.dp))
             Text(if (state.summary is SummaryUi.Done) "Résumé" else "Résumer")
+        }
+        if (!listening && !state.loadingContent && state.visibleBlocks.isNotEmpty()) {
+            AssistChip(
+                onClick = onListen,
+                label = { Text("Écouter") },
+                leadingIcon = { Icon(Icons.Default.Headphones, null, Modifier.size(18.dp)) },
+            )
         }
         when (val t = state.translation) {
             TranslationUi.Original, is TranslationUi.Unavailable -> AssistChip(
@@ -525,6 +605,59 @@ private fun SummaryCard(
                     TextButton(onClick = onRetry) { Text("Réessayer") }
                 }
             }
+        }
+    }
+}
+
+/** Mini-player in a glass capsule: previous / play-pause / next paragraph, speed, close. */
+@Composable
+private fun ReadAloudBar(
+    backdrop: com.kyant.backdrop.Backdrop,
+    state: com.asawaaah.fil.ai.ReadAloudState,
+    onToggle: () -> Unit,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onRate: (Float) -> Unit,
+    onClose: () -> Unit,
+    onInstallVoice: () -> Unit,
+) {
+    val rates = listOf(0.8f, 1f, 1.25f, 1.5f, 2f)
+    Column(
+        Modifier
+            .padding(horizontal = 16.dp)
+            .glassSurface(backdrop, RoundedCornerShape(28.dp))
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        state.voiceProblem?.let { problem ->
+            Text(problem, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
+            TextButton(onClick = onInstallVoice) { Text("Installer la voix") }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onPrevious) { Icon(Icons.Default.SkipPrevious, "Paragraphe précédent") }
+            IconButton(onClick = onToggle, modifier = Modifier.size(56.dp)) {
+                Icon(
+                    if (state.playing) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    if (state.playing) "Pause" else "Lecture",
+                    Modifier.size(32.dp),
+                )
+            }
+            IconButton(onClick = onNext) { Icon(Icons.Default.SkipNext, "Paragraphe suivant") }
+            val label = (if (state.rate % 1f == 0f) "${state.rate.toInt()}" else "${state.rate}".replace('.', ',')) + " ×"
+            TextButton(
+                onClick = {
+                    val i = rates.indexOfFirst { it >= state.rate - 0.01f }
+                    onRate(rates[(i + 1).mod(rates.size)])
+                },
+                modifier = Modifier.semantics { contentDescription = "Vitesse de lecture : $label. Toucher pour changer." },
+            ) { Text(label, style = MaterialTheme.typography.labelLarge) }
+            IconButton(onClick = onClose) { Icon(Icons.Default.Close, "Arrêter la lecture") }
+        }
+        if (state.segments.isNotEmpty()) {
+            LinearProgressIndicator(
+                progress = { (state.index + 1f) / state.segments.size },
+                modifier = Modifier.width(200.dp).padding(bottom = 4.dp),
+            )
         }
     }
 }

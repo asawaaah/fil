@@ -98,9 +98,46 @@ class ReaderViewModel(private val c: AppContainer, private val articleId: Long) 
         load()
     }
 
+    /** Reading aloud (shared by the whole app: it may be another article's). */
+    val readAloud: StateFlow<com.asawaaah.fil.ai.ReadAloudState> = c.readAloud.state
+
+    /** Reads the article as shown (translated or original) with the phone's voice. */
+    fun listen(fromBlock: Int? = null) {
+        val s = _state.value
+        val article = s.article ?: return
+        val title = if (s.showTranslated && s.translatedTitle != null) s.translatedTitle else article.title
+        val segments = com.asawaaah.fil.ai.ReadAloudScript.build(title, s.visibleBlocks)
+        if (segments.isEmpty()) return
+        val lang = if (s.showTranslated) "fr" else article.lang?.takeIf { it != "und" } ?: "fr"
+        val start = fromBlock?.let { b -> segments.indexOfFirst { it.block >= b }.takeIf { it >= 0 } } ?: 0
+        c.readAloud.start(
+            com.asawaaah.fil.ai.ReadAloudContent(
+                articleId = article.id,
+                title = title,
+                source = s.feed?.title.orEmpty(),
+                imageUrl = article.imageUrl,
+                language = lang,
+                segments = segments,
+            ),
+            start,
+        )
+    }
+
+    fun toggleReading() = c.readAloud.toggle()
+    fun nextSegment() = c.readAloud.next()
+    fun previousSegment() = c.readAloud.previous()
+    fun stopReading() = c.readAloud.stop()
+    fun setReadingRate(rate: Float) {
+        c.readAloud.setRate(rate)
+        viewModelScope.launch { c.settings.setReadAloudRate(rate) }
+    }
+
     private fun load() = viewModelScope.launch {
         // Load the model while the article is being read: the summary then starts at once.
         c.llm.warmUpSoon()
+        // Same for the voice, and the speed chosen last time.
+        c.readAloud.warmUp()
+        if (c.readAloud.state.value.articleId == null) c.readAloud.setRate(c.settings.current().readAloudRate)
         val stored = c.db.articleDao().getById(articleId) ?: return@launch
         val article = stored.copy(lang = c.translationService.detectAndStore(stored))
         val feed = c.db.feedDao().getById(article.feedId)

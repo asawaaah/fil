@@ -19,6 +19,7 @@ mlkitLanguageId = "17.0.6"
 litertlm = "0.18.1"
 litertNpu = "2.3.0"
 backdrop = "2.0.1"
+media3 = "1.11.1"
 junit = "4.13.2"
 
 [libraries]
@@ -52,6 +53,9 @@ litertlm-android = { group = "com.google.ai.edge.litertlm", name = "litertlm-and
 backdrop = { group = "io.github.kyant0", name = "backdrop", version.ref = "backdrop" }
 litert-npu-google-tensor ={ group = "com.google.ai.edge.litert", name = "litert-npu-runtime-google-tensor", version.ref = "litertNpu" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+
+media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3" }
+media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

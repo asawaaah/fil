@@ -7,6 +7,14 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <!-- Text-to-speech engines must be visible to the app (Android 11+). -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
 
     <application
         android:name=".FilApp"
@@ -77,6 +85,15 @@
             <meta-data
                 android:name="backend:com.google.android.datatransport.cct.CctBackendFactory"
                 tools:node="remove" />
+        </service>
+        <!-- Reading articles aloud, also with the screen off (controls in the notification). -->
+        <service
+            android:name=".ai.ReadAloudService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
         </service>
     </application>
 </manifest>

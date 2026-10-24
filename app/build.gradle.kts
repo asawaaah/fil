@@ -12,8 +12,8 @@ android {
         applicationId = "com.asawaaah.fil"
         minSdk = 29
         targetSdk = 37
-        versionCode = 9
-        versionName = "0.1.8"
+        versionCode = 10
+        versionName = "0.1.9"
     }
 
     // One APK per processor type: arm64 for phones, x86_64 for the PC emulator.
@@ -88,6 +88,8 @@ dependencies {
     implementation(libs.jsoup)
     implementation(libs.coil.compose)
     implementation(libs.backdrop)
+    implementation(libs.media3.session)
+    implementation(libs.media3.common)
     implementation(libs.coil.network.okhttp)
 
     implementation(libs.kotlinx.coroutines.android)

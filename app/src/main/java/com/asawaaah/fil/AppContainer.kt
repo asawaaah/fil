@@ -64,6 +64,9 @@ class AppContainer(context: Context) {
 
     val pendingAction = MutableStateFlow<PendingAction?>(null)
 
+    /** Reading articles aloud with the phone's voice. */
+    val readAloud by lazy { com.asawaaah.fil.ai.ReadAloud(appContext) }
+
     fun start() {
         appScope.launch {
             settings.settings
