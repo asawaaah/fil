@@ -21,9 +21,12 @@ import java.util.concurrent.TimeUnit
 class RefreshWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val c = (applicationContext as FilApp).container
-        c.feedRepository.refreshAll()
+        val report = c.feedRepository.refreshAll()
         c.feedRepository.purgeOld()
+        // Titles are translated before the notifications, so these show them in French.
         c.translationService.processPending()
+        val toAnnounce = report.newArticleIds.chunked(500).flatMap { c.db.articleDao().forNotification(it) }
+        NewArticleNotifier(applicationContext).post(toAnnounce)
         c.workScheduler.enqueuePrepareSummaries()
         return Result.success()
     }

@@ -114,6 +114,33 @@ class SourcesViewModel(private val c: AppContainer) : ViewModel() {
         }
     }
 
+    fun deleteMany(ids: Set<Long>) {
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            ids.toList().chunked(500).forEach { c.db.feedDao().deleteAll(it) }
+            message.value = "${ids.size} source${if (ids.size > 1) "s" else ""} supprimée${if (ids.size > 1) "s" else ""}"
+        }
+    }
+
+    fun moveMany(ids: Set<Long>, folderId: Long?) {
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            ids.toList().chunked(500).forEach { c.db.feedDao().setFolderMany(it, folderId) }
+            val name = folderId?.let { id -> folders.value.firstOrNull { it.id == id }?.name }
+            message.value = "${ids.size} source${if (ids.size > 1) "s" else ""} " +
+                if (name != null) "déplacée${if (ids.size > 1) "s" else ""} dans « $name »" else "sorties de leur dossier"
+        }
+    }
+
+    fun moveManyToNewFolder(ids: Set<Long>, name: String) {
+        if (ids.isEmpty() || name.isBlank()) return
+        viewModelScope.launch {
+            val id = c.feedRepository.getOrCreateFolder(name.trim())
+            ids.toList().chunked(500).forEach { c.db.feedDao().setFolderMany(it, id) }
+            message.value = "${ids.size} source${if (ids.size > 1) "s" else ""} déplacée${if (ids.size > 1) "s" else ""} dans « ${name.trim()} »"
+        }
+    }
+
     fun refreshOne(item: FeedWithCount) {
         viewModelScope.launch {
             when (val r = c.feedRepository.refreshFeed(item.feed, rediscover = true)) {

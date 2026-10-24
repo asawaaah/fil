@@ -78,6 +78,12 @@ interface FeedDao {
     @Query("UPDATE feeds SET folderId = :folderId WHERE id = :id")
     suspend fun setFolder(id: Long, folderId: Long?)
 
+    @Query("UPDATE feeds SET folderId = :folderId WHERE id IN (:ids)")
+    suspend fun setFolderMany(ids: List<Long>, folderId: Long?)
+
+    @Query("UPDATE feeds SET notify = :notify WHERE id = :id")
+    suspend fun setNotify(id: Long, notify: Boolean)
+
     @Query("UPDATE feeds SET hiddenFromMain = :hidden WHERE id = :id")
     suspend fun setHidden(id: Long, hidden: Boolean)
 
@@ -161,6 +167,17 @@ interface ArticleDao {
 
     @Query("UPDATE articles SET isRead = 0 WHERE id IN (:ids)")
     suspend fun markUnread(ids: List<Long>)
+
+    @Query("SELECT COUNT(*) FROM articles WHERE feedId = :feedId AND isRead = 0")
+    fun observeUnreadCount(feedId: Long): Flow<Int>
+
+    /** Among [ids], the unread articles of sources that asked for notifications, newest first. */
+    @Query(
+        "SELECT a.id, a.feedId, a.title, a.titleFr, f.title AS feedTitle FROM articles a " +
+            "JOIN feeds f ON f.id = a.feedId WHERE a.id IN (:ids) AND f.notify = 1 AND a.isRead = 0 " +
+            "ORDER BY a.publishedAt DESC",
+    )
+    suspend fun forNotification(ids: List<Long>): List<NotifyItem>
 
     @Query("UPDATE articles SET lang = :lang, titleFr = :titleFr, excerptFr = :excerptFr WHERE id = :id")
     suspend fun setTranslation(id: Long, lang: String?, titleFr: String?, excerptFr: String?)

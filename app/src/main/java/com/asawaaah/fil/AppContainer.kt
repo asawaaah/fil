@@ -30,6 +30,8 @@ import kotlinx.coroutines.launch
 sealed interface PendingAction {
     data object OpenImport : PendingAction
     data class AddSource(val url: String) : PendingAction
+    data class OpenArticle(val id: Long) : PendingAction
+    data class OpenFeed(val id: Long) : PendingAction
 }
 
 /** Hand-made dependency container: one instance per process. */

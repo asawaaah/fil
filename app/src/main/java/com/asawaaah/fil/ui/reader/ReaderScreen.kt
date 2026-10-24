@@ -2,6 +2,7 @@ package com.asawaaah.fil.ui.reader
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -120,7 +121,8 @@ import androidx.compose.ui.semantics.semantics
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit) {
+fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit, onOpenFeed: (Long) -> Unit = {}) {
+    var sourceSheet by remember { mutableStateOf(false) }
     val vm: ReaderViewModel = viewModel(key = "reader-$articleId", factory = containerFactory { ReaderViewModel(it, articleId) })
     val state by vm.state.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
@@ -173,7 +175,14 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
             { SearchField(query, onChange = { query = it }, onNext = { goTo(current + 1); keyboard?.hide() }) }
         } else {
             {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // Source name: opens its panel (notifications, folder, delete…).
+            Row(
+                Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable(enabled = state.feed != null, onClickLabel = "Options de la source") { sourceSheet = true }
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 state.feed?.let { feed ->
                     SourceIcon(feed.iconUrl, feed.title, size = 22.dp)
                     Spacer(Modifier.width(8.dp))
@@ -380,6 +389,16 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                 }
             }
         }
+    }
+    val feedForSheet = state.feed
+    if (sourceSheet && feedForSheet != null) {
+        com.asawaaah.fil.ui.sources.SourceSheet(
+            feedId = feedForSheet.id,
+            onDismiss = { sourceSheet = false },
+            onOpenFeed = onOpenFeed,
+            // The article goes with its source.
+            onDeleted = onBack,
+        )
     }
 }
 

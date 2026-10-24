@@ -12,8 +12,8 @@ android {
         applicationId = "com.asawaaah.fil"
         minSdk = 29
         targetSdk = 37
-        versionCode = 8
-        versionName = "0.1.7"
+        versionCode = 9
+        versionName = "0.1.8"
     }
 
     // One APK per processor type: arm64 for phones, x86_64 for the PC emulator.

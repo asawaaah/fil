@@ -1,5 +1,6 @@
 package com.asawaaah.fil.data.db
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -48,6 +49,9 @@ data class FeedEntity(
     val errorKind: String? = null,
     /** Previous site, when the feed was automatically moved to another site: to be checked by the user. */
     val movedFrom: String? = null,
+    /** Post a notification for each new article of this source. */
+    @ColumnInfo(defaultValue = "0")
+    val notify: Boolean = false,
 ) {
     companion object {
         const val KIND_RSS = "rss"
@@ -156,6 +160,15 @@ data class ArticleListItem(
     val feedIconUrl: String?,
     val feedSiteUrl: String?,
     val hasSummary: Boolean,
+)
+
+/** New article to announce in a notification. */
+data class NotifyItem(
+    val id: Long,
+    val feedId: Long,
+    val title: String,
+    val titleFr: String?,
+    val feedTitle: String,
 )
 
 data class FeedWithCount(

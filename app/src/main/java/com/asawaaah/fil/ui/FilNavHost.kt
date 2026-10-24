@@ -74,6 +74,8 @@ fun FilNavHost(container: AppContainer) {
     LaunchedEffect(pending) {
         when (val p = pending) {
             PendingAction.OpenImport -> nav.navigate("import") { launchSingleTop = true }
+            is PendingAction.OpenArticle -> nav.navigate("reader/${p.id}")
+            is PendingAction.OpenFeed -> nav.navigate("list/feed/${p.id}")
             is PendingAction.AddSource -> {
                 prefillUrl = p.url
                 nav.switchTab("sources")
@@ -100,6 +102,7 @@ fun FilNavHost(container: AppContainer) {
                         onBack = null,
                         onGoToSources = { nav.switchTab("sources") },
                         onImportOpml = { nav.navigate("import") },
+                        onOpenFeed = { nav.navigate("list/feed/$it") },
                     )
                 }
                 composable("saved") {
@@ -109,6 +112,7 @@ fun FilNavHost(container: AppContainer) {
                         onBack = null,
                         onGoToSources = { nav.switchTab("sources") },
                         onImportOpml = { nav.navigate("import") },
+                        onOpenFeed = { nav.navigate("list/feed/$it") },
                     )
                 }
                 composable("sources") {
@@ -131,6 +135,7 @@ fun FilNavHost(container: AppContainer) {
                         onBack = { nav.popBackStack() },
                         onGoToSources = { nav.switchTab("sources") },
                         onImportOpml = { nav.navigate("import") },
+                        onOpenFeed = { nav.navigate("list/feed/$it") },
                     )
                 }
                 composable("list/folder/{id}", arguments = listOf(navArgument("id") { type = NavType.LongType })) { entry ->
@@ -141,6 +146,7 @@ fun FilNavHost(container: AppContainer) {
                         onBack = { nav.popBackStack() },
                         onGoToSources = { nav.switchTab("sources") },
                         onImportOpml = { nav.navigate("import") },
+                        onOpenFeed = { nav.navigate("list/feed/$it") },
                     )
                 }
                 composable("reader/{id}", arguments = listOf(navArgument("id") { type = NavType.LongType })) { entry ->
@@ -148,6 +154,7 @@ fun FilNavHost(container: AppContainer) {
                         articleId = entry.arguments?.getLong("id") ?: 0L,
                         onBack = { nav.popBackStack() },
                         onOpenSettings = { nav.switchTab("settings") },
+                        onOpenFeed = { nav.navigate("list/feed/$it") },
                     )
                 }
                 composable("import") {

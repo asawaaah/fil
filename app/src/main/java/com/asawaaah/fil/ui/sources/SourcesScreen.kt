@@ -26,8 +26,16 @@ import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.TriStateCheckbox
+import androidx.compose.ui.state.ToggleableState
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.CircularProgressIndicator
@@ -89,10 +97,17 @@ fun SourcesScreen(
     var newFolderFor by remember { mutableStateOf<Long?>(null) }
     var showNewFolder by remember { mutableStateOf(false) }
     var renameFolder by remember { mutableStateOf<FolderEntity?>(null) }
-    var renameFeed by remember { mutableStateOf<FeedWithCount?>(null) }
-    var moveFeed by remember { mutableStateOf<FeedWithCount?>(null) }
-    var confirmDelete by remember { mutableStateOf<FeedWithCount?>(null) }
+    var sheetFor by remember { mutableStateOf<Long?>(null) }
     var confirmDeleteGone by remember { mutableStateOf<Int?>(null) }
+    // Several sources selected at once (long press), to move or delete them together.
+    var selected by remember { mutableStateOf(emptySet<Long>()) }
+    val selecting = selected.isNotEmpty()
+    var confirmDeleteMany by remember { mutableStateOf(false) }
+    var moveMany by remember { mutableStateOf(false) }
+    BackHandler(enabled = selecting) { selected = emptySet() }
+    fun toggle(id: Long) {
+        selected = if (id in selected) selected - id else selected + id
+    }
     val retryProgress by vm.retryProgress.collectAsStateWithLifecycle()
 
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/x-opml")) { uri ->
@@ -113,16 +128,24 @@ fun SourcesScreen(
         }
     }
 
+    val allIds = groups.orEmpty().flatMap { g -> g.feeds.map { it.feed.id } }
     GlassScreen(
-        title = "Sources",
+        title = if (selecting) "${selected.size} sélectionnée${if (selected.size > 1) "s" else ""}" else "Sources",
+        onBack = if (selecting) ({ selected = emptySet() }) else null,
         snackbar = snackbar,
         actions = {
-            IconButton(onClick = onImportOpml) { Icon(Icons.Default.FileUpload, "Importer un fichier OPML") }
-            IconButton(onClick = { exportLauncher.launch("fil-abonnements.opml") }) { Icon(Icons.Default.FileDownload, "Exporter en OPML") }
-            IconButton(onClick = { newFolderFor = null; showNewFolder = true }) { Icon(Icons.Default.CreateNewFolder, "Nouveau dossier") }
+            if (selecting) {
+                IconButton(onClick = { selected = allIds.toSet() }) { Icon(Icons.Default.SelectAll, "Tout sélectionner") }
+                IconButton(onClick = { moveMany = true }) { Icon(Icons.AutoMirrored.Filled.DriveFileMove, "Déplacer la sélection") }
+                IconButton(onClick = { confirmDeleteMany = true }) { Icon(Icons.Default.Delete, "Supprimer la sélection") }
+            } else {
+                IconButton(onClick = onImportOpml) { Icon(Icons.Default.FileUpload, "Importer un fichier OPML") }
+                IconButton(onClick = { exportLauncher.launch("fil-abonnements.opml") }) { Icon(Icons.Default.FileDownload, "Exporter en OPML") }
+                IconButton(onClick = { newFolderFor = null; showNewFolder = true }) { Icon(Icons.Default.CreateNewFolder, "Nouveau dossier") }
+            }
         },
         floating = { backdrop, bottom ->
-            GlassFab(
+            if (!selecting) GlassFab(
                 backdrop = backdrop,
                 icon = Icons.Default.Add,
                 text = "Ajouter",
@@ -200,7 +223,16 @@ fun SourcesScreen(
             }
             list.forEach { group ->
                 item(key = "folder-${group.folder?.id ?: "none"}") {
+                    val ids = group.feeds.map { it.feed.id }
+                    val inGroup = ids.count { it in selected }
                     FolderHeader(
+                        selection = when {
+                            !selecting || ids.isEmpty() -> null
+                            inGroup == ids.size -> ToggleableState.On
+                            inGroup == 0 -> ToggleableState.Off
+                            else -> ToggleableState.Indeterminate
+                        },
+                        onToggleAll = { selected = if (inGroup == ids.size) selected - ids.toSet() else selected + ids },
                         folder = group.folder,
                         count = group.feeds.size,
                         unread = group.feeds.sumOf { it.unreadCount },
@@ -212,14 +244,10 @@ fun SourcesScreen(
                 items(group.feeds, key = { "feed-${it.feed.id}" }) { item ->
                     FeedRow(
                         item = item,
-                        onOpen = { onOpenFeed(item.feed.id) },
-                        onMove = { moveFeed = item },
-                        onRename = { renameFeed = item },
-                        onToggleHidden = { vm.setHidden(item.feed.id, !item.feed.hiddenFromMain) },
-                        onToggleFullText = { vm.setFullText(item.feed.id, !item.feed.isFullText) },
-                        onConfirmMoved = { vm.confirmMoved(item.feed.id) },
-                        onRefresh = { vm.refreshOne(item) },
-                        onDelete = { confirmDelete = item },
+                        selected = if (selecting) item.feed.id in selected else null,
+                        onOpen = { if (selecting) toggle(item.feed.id) else onOpenFeed(item.feed.id) },
+                        onSelect = { toggle(item.feed.id) },
+                        onOptions = { sheetFor = item.feed.id },
                     )
                 }
             }
@@ -241,38 +269,31 @@ fun SourcesScreen(
     renameFolder?.let { folder ->
         TextInputDialog("Renommer le dossier", folder.name, "Renommer", { vm.renameFolder(folder, it); renameFolder = null }, { renameFolder = null })
     }
-    renameFeed?.let { item ->
-        TextInputDialog("Renommer la source", item.feed.title, "Renommer", { vm.rename(item.feed.id, it); renameFeed = null }, { renameFeed = null })
+    sheetFor?.let { id ->
+        SourceSheet(feedId = id, onDismiss = { sheetFor = null }, onOpenFeed = onOpenFeed)
     }
-    moveFeed?.let { item ->
+    if (moveMany) {
+        FolderPickerDialog(
+            title = "Déplacer ${selected.size} source${if (selected.size > 1) "s" else ""}",
+            folders = folders,
+            current = -1,
+            onPick = { vm.moveMany(selected, it); moveMany = false; selected = emptySet() },
+            onNewFolder = { vm.moveManyToNewFolder(selected, it); moveMany = false; selected = emptySet() },
+            onDismiss = { moveMany = false },
+        )
+    }
+    if (confirmDeleteMany) {
+        val n = selected.size
         AlertDialog(
-            onDismissRequest = { moveFeed = null },
-            title = { Text("Déplacer « ${item.feed.title} »") },
-            text = {
-                LazyColumn {
-                    item {
-                        ListItem(
-                            headlineContent = { Text("Sans dossier") },
-                            modifier = Modifier.clickable { vm.moveToFolder(item.feed.id, null); moveFeed = null },
-                        )
-                    }
-                    items(folders, key = { it.id }) { f ->
-                        ListItem(
-                            headlineContent = { Text(f.name) },
-                            leadingContent = { Icon(Icons.Default.Folder, null) },
-                            modifier = Modifier.clickable { vm.moveToFolder(item.feed.id, f.id); moveFeed = null },
-                        )
-                    }
-                    item {
-                        ListItem(
-                            headlineContent = { Text("Nouveau dossier…") },
-                            leadingContent = { Icon(Icons.Default.CreateNewFolder, null) },
-                            modifier = Modifier.clickable { newFolderFor = item.feed.id; moveFeed = null; showNewFolder = true },
-                        )
-                    }
+            onDismissRequest = { confirmDeleteMany = false },
+            title = { Text("Supprimer $n source${if (n > 1) "s" else ""} ?") },
+            text = { Text("Leurs articles seront supprimés aussi, y compris ceux gardés dans « À lire plus tard ».") },
+            confirmButton = {
+                TextButton(onClick = { vm.deleteMany(selected); selected = emptySet(); confirmDeleteMany = false }) {
+                    Text("Supprimer", color = MaterialTheme.colorScheme.error)
                 }
             },
-            confirmButton = { TextButton(onClick = { moveFeed = null }) { Text("Annuler") } },
+            dismissButton = { TextButton(onClick = { confirmDeleteMany = false }) { Text("Annuler") } },
         )
     }
     confirmDeleteGone?.let { n ->
@@ -284,28 +305,35 @@ fun SourcesScreen(
             dismissButton = { TextButton(onClick = { confirmDeleteGone = null }) { Text("Annuler") } },
         )
     }
-    confirmDelete?.let { item ->
-        AlertDialog(
-            onDismissRequest = { confirmDelete = null },
-            title = { Text("Supprimer « ${item.feed.title} » ?") },
-            text = { Text("Ses articles seront supprimés aussi, sauf si tu les réimportes plus tard.") },
-            confirmButton = { TextButton(onClick = { vm.delete(item); confirmDelete = null }) { Text("Supprimer") } },
-            dismissButton = { TextButton(onClick = { confirmDelete = null }) { Text("Annuler") } },
-        )
-    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun FolderHeader(folder: FolderEntity?, count: Int, unread: Int, onOpen: () -> Unit, onRename: () -> Unit, onDelete: () -> Unit) {
+private fun FolderHeader(
+    selection: ToggleableState?,
+    onToggleAll: () -> Unit,
+    folder: FolderEntity?,
+    count: Int,
+    unread: Int,
+    onOpen: () -> Unit,
+    onRename: () -> Unit,
+    onDelete: () -> Unit,
+) {
     var menu by remember { mutableStateOf(false) }
     Row(
         Modifier
             .fillMaxWidth()
-            .combinedClickable(enabled = folder != null, onClick = onOpen, onLongClick = { menu = true })
-            .padding(start = 16.dp, end = 4.dp, top = 16.dp, bottom = 4.dp),
+            .combinedClickable(
+                enabled = folder != null || selection != null,
+                onClick = if (selection != null) onToggleAll else onOpen,
+                onLongClick = { if (selection == null) menu = true },
+            )
+            .padding(start = if (selection != null) 4.dp else 16.dp, end = 4.dp, top = 16.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (selection != null) {
+            TriStateCheckbox(state = selection, onClick = onToggleAll)
+        }
         Text(
             (folder?.name ?: "Sans dossier").uppercase(),
             style = MaterialTheme.typography.labelLarge,
@@ -317,7 +345,7 @@ private fun FolderHeader(folder: FolderEntity?, count: Int, unread: Int, onOpen:
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        if (folder != null) {
+        if (folder != null && selection == null) {
             Box {
                 IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, "Options du dossier") }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
@@ -330,23 +358,26 @@ private fun FolderHeader(folder: FolderEntity?, count: Int, unread: Int, onOpen:
     }
 }
 
+/** [selected] is null outside selection mode. Long press selects; ⋮ opens the source's panel. */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FeedRow(
     item: FeedWithCount,
+    selected: Boolean?,
     onOpen: () -> Unit,
-    onMove: () -> Unit,
-    onRename: () -> Unit,
-    onToggleHidden: () -> Unit,
-    onToggleFullText: () -> Unit,
-    onConfirmMoved: () -> Unit,
-    onRefresh: () -> Unit,
-    onDelete: () -> Unit,
+    onSelect: () -> Unit,
+    onOptions: () -> Unit,
 ) {
-    var menu by remember { mutableStateOf(false) }
     val feed = item.feed
     ListItem(
-        modifier = Modifier.clickable(onClick = onOpen),
-        leadingContent = { SourceIcon(feed.iconUrl, feed.title, size = 28.dp) },
+        modifier = Modifier.combinedClickable(onClick = onOpen, onLongClick = onSelect, onLongClickLabel = "Sélectionner"),
+        leadingContent = {
+            if (selected != null) {
+                Checkbox(checked = selected, onCheckedChange = null)
+            } else {
+                SourceIcon(feed.iconUrl, feed.title, size = 28.dp)
+            }
+        },
         headlineContent = { Text(feed.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         supportingContent = {
             if (feed.lastError != null) {
@@ -380,25 +411,16 @@ private fun FeedRow(
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     ) { Text("${item.unreadCount}") }
                 }
-                Box {
-                    IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, "Options") }
-                    DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                        if (feed.movedFrom != null) {
-                            DropdownMenuItem(text = { Text("C'est la bonne source") }, onClick = { menu = false; onConfirmMoved() })
-                        }
-                        DropdownMenuItem(text = { Text("Actualiser") }, onClick = { menu = false; onRefresh() })
-                        DropdownMenuItem(text = { Text("Déplacer vers un dossier") }, onClick = { menu = false; onMove() })
-                        DropdownMenuItem(text = { Text("Renommer") }, onClick = { menu = false; onRename() })
-                        DropdownMenuItem(
-                            text = { Text(if (feed.hiddenFromMain) "Afficher dans le fil principal" else "Masquer du fil principal") },
-                            onClick = { menu = false; onToggleHidden() },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(if (feed.isFullText) "Récupérer le texte sur le site" else "Le flux contient déjà le texte complet") },
-                            onClick = { menu = false; onToggleFullText() },
-                        )
-                        DropdownMenuItem(text = { Text("Supprimer") }, onClick = { menu = false; onDelete() })
-                    }
+                if (feed.notify) {
+                    Icon(
+                        Icons.Default.Notifications,
+                        "Notifications activées",
+                        Modifier.padding(start = 6.dp).size(16.dp),
+                        tint = MaterialTheme.colorScheme.secondary,
+                    )
+                }
+                if (selected == null) {
+                    IconButton(onClick = onOptions) { Icon(Icons.Default.MoreVert, "Options de ${feed.title}") }
                 }
             }
         },

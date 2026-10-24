@@ -54,9 +54,15 @@ class MainActivity : ComponentActivity() {
         handleIntent(intent)
     }
 
-    /** OPML files opened or shared with the app, and web links shared to follow a site. */
+    /** OPML files opened or shared with the app, web links shared to follow a site, notifications. */
     private fun handleIntent(intent: Intent?) {
         intent ?: return
+        val articleId = intent.getLongExtra(EXTRA_ARTICLE_ID, -1)
+        val feedId = intent.getLongExtra(EXTRA_FEED_ID, -1)
+        when {
+            articleId > 0 -> container.pendingAction.value = PendingAction.OpenArticle(articleId)
+            feedId > 0 -> container.pendingAction.value = PendingAction.OpenFeed(feedId)
+        }
         when (intent.action) {
             Intent.ACTION_VIEW -> intent.data?.let { importFrom(it) }
             Intent.ACTION_SEND -> {
@@ -70,6 +76,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    companion object {
+        const val EXTRA_ARTICLE_ID = "fil.article_id"
+        const val EXTRA_FEED_ID = "fil.feed_id"
     }
 
     private fun importFrom(uri: Uri) {

@@ -107,8 +107,11 @@ fun FeedScreen(
     onBack: (() -> Unit)?,
     onGoToSources: () -> Unit,
     onImportOpml: () -> Unit,
+    onOpenFeed: (Long) -> Unit = {},
 ) {
     val key = initial.toString()
+    // Panel with the actions on one source, opened from an article or a pile.
+    var sheetFor by remember { mutableStateOf<Long?>(null) }
     val vm: FeedViewModel = viewModel(key = key, factory = containerFactory { FeedViewModel(it, initial) })
     val items by vm.items.collectAsStateWithLifecycle()
     val title by vm.title.collectAsStateWithLifecycle()
@@ -219,6 +222,7 @@ fun FeedScreen(
                                     onToggleSaved = { vm.toggleSaved(item) },
                                     onSetRead = { vm.setRead(item, it) },
                                     compact = settings.compactFeed,
+                                    onOpenSource = { sheetFor = item.feedId },
                                 )
                                 HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                             }
@@ -231,9 +235,11 @@ fun FeedScreen(
                             onToggleSaved = { vm.toggleSaved(it) },
                             onSetRead = { item, read -> vm.setRead(item, read) },
                             compact = settings.compactFeed,
+                            onOpenSource = { sheetFor = row.group.feedId },
                         )
                         is FeedRow.GroupHead -> ExpandedGroupHeader(
                             group = row.group,
+                            onOpenSource = { sheetFor = row.group.feedId },
                             onCollapse = { vm.toggleGroup(row.group.key) },
                             onMarkRead = { vm.markGroupRead(row.group) },
                         )
@@ -248,6 +254,18 @@ fun FeedScreen(
             }
         }
     }
+    SourceSheetHost(sheetFor, initial, onDismiss = { sheetFor = null }, onOpenFeed = onOpenFeed)
+}
+
+@Composable
+private fun SourceSheetHost(feedId: Long?, initial: ListSelection, onDismiss: () -> Unit, onOpenFeed: (Long) -> Unit) {
+    feedId ?: return
+    com.asawaaah.fil.ui.sources.SourceSheet(
+        feedId = feedId,
+        onDismiss = onDismiss,
+        // No "see its articles" when its own list is the one on screen.
+        onOpenFeed = if (initial is ListSelection.Feed && initial.id == feedId) null else onOpenFeed,
+    )
 }
 
 /** Flat list of what the feed shows, so that each row has a stable key and a known position. */
@@ -388,6 +406,7 @@ private fun GroupCard(
     onToggleSaved: (ArticleListItem) -> Unit,
     onSetRead: (ArticleListItem, Boolean) -> Unit,
     compact: Boolean = false,
+    onOpenSource: () -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(20.dp)
@@ -426,6 +445,7 @@ private fun GroupCard(
                 onToggleSaved = { onToggleSaved(group.lead) },
                 onSetRead = { onSetRead(group.lead, it) },
                 compact = compact,
+                onOpenSource = onOpenSource,
             )
             previews.forEach { item ->
                 Row(
@@ -493,20 +513,31 @@ private fun GroupCard(
 
 /** Top of an unfolded group: source, count, "mark all read" and "fold". */
 @Composable
-private fun ExpandedGroupHeader(group: FeedEntry.Group, onCollapse: () -> Unit, onMarkRead: () -> Unit) {
+private fun ExpandedGroupHeader(group: FeedEntry.Group, onOpenSource: () -> Unit, onCollapse: () -> Unit, onMarkRead: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp, top = 12.dp),
+        Modifier.fillMaxWidth().padding(start = 8.dp, end = 4.dp, top = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SourceIcon(group.lead.feedIconUrl, group.feedTitle, size = 22.dp)
-        Spacer(Modifier.width(10.dp))
-        Text(
-            "${group.feedTitle} · ${group.items.size} articles",
-            style = MaterialTheme.typography.titleSmall,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f).semantics { heading() },
-        )
+        // Source name: opens its panel (notifications, folder, delete…).
+        Row(
+            Modifier
+                .weight(1f)
+                .heightIn(min = 48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(onClickLabel = "Options de la source", onClick = onOpenSource)
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SourceIcon(group.lead.feedIconUrl, group.feedTitle, size = 22.dp)
+            Spacer(Modifier.width(10.dp))
+            Text(
+                "${group.feedTitle} · ${group.items.size} articles",
+                style = MaterialTheme.typography.titleSmall,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.semantics { heading() },
+            )
+        }
         if (group.unreadCount > 0) {
             IconButton(onClick = onMarkRead) {
                 Icon(Icons.Default.DoneAll, "Marquer les ${articlesOf(group)} comme lus", tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -569,6 +600,8 @@ fun ArticleCard(
     onSetRead: (Boolean) -> Unit,
     /** Title and a small picture only: about twice as many articles per screen. */
     compact: Boolean = false,
+    /** Opens the source's panel; null hides the menu entry. */
+    onOpenSource: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var menu by remember { mutableStateOf(false) }
@@ -685,6 +718,13 @@ fun ArticleCard(
             item.url?.let { url ->
                 DropdownMenuItem(text = { Text("Ouvrir dans le navigateur") }, onClick = { menu = false; openInBrowser(context, url) })
                 DropdownMenuItem(text = { Text("Partager") }, onClick = { menu = false; shareLink(context, item.titleFr ?: item.title, url) })
+            }
+            if (onOpenSource != null) {
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = { Text("Source : ${item.feedTitle}…", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    onClick = { menu = false; onOpenSource() },
+                )
             }
         }
     }
