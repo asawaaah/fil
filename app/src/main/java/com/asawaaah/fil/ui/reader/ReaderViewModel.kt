@@ -74,6 +74,9 @@ data class ReaderState(
     val translatedByAi: Boolean = false,
     val aiError: String? = null,
     val summary: SummaryUi = SummaryUi.Hidden,
+    /** Length of the summary shown (or being made), and the lengths already made for this article. */
+    val summaryLength: com.asawaaah.fil.ai.SummaryLength = com.asawaaah.fil.ai.SummaryLength.MEDIUM,
+    val summaryLengths: Set<com.asawaaah.fil.ai.SummaryLength> = emptySet(),
     /** Owners of the source, when it is a known French media. */
     val ownership: com.asawaaah.fil.data.MediaOwnership? = null,
 ) {
@@ -151,8 +154,16 @@ class ReaderViewModel(private val c: AppContainer, private val articleId: Long) 
         _state.update { it.copy(article = article, feed = feed, ownership = ownership) }
         if (!article.isRead) c.articleRepository.setRead(article.id, true)
 
-        // Show any cached summary right away.
-        c.summaryService.cached(article.id)?.let { cached ->
+        // Show any cached summary right away: the default length if made, else another one.
+        val made = c.summaryService.availableLengths(article.id)
+        val default = c.summaryService.defaultLength()
+        val shown = if (default in made) default else listOf(
+            com.asawaaah.fil.ai.SummaryLength.MEDIUM,
+            com.asawaaah.fil.ai.SummaryLength.SHORT,
+            com.asawaaah.fil.ai.SummaryLength.LONG,
+        ).firstOrNull { it in made } ?: default
+        _state.update { it.copy(summaryLength = shown, summaryLengths = made) }
+        c.summaryService.cached(article.id, shown)?.let { cached ->
             _state.update { it.copy(summary = cached.toUi()) }
         }
 
@@ -266,23 +277,40 @@ class ReaderViewModel(private val c: AppContainer, private val articleId: Long) 
         }
     }
 
-    fun summarize(force: Boolean = false) {
-        if (!modelInstalled.value) {
+    /**
+     * Shows the summary of [length] (the default one for the "Résumer" button, the current one for
+     * "Refaire"), from the cache or made now.
+     */
+    fun summarize(force: Boolean = false, length: com.asawaaah.fil.ai.SummaryLength? = null) {
+        val cachedOk = length != null && length in _state.value.summaryLengths && !force
+        if (!modelInstalled.value && !cachedOk) {
             _state.update { it.copy(summary = SummaryUi.NeedsModel) }
             return
         }
         summaryJob?.cancel()
         summaryJob = viewModelScope.launch {
-            _state.update { it.copy(summary = SummaryUi.Working("Préparation…", null)) }
-            c.summaryService.summarize(articleId, force).collect { p ->
+            val len = length
+                ?: if (force) _state.value.summaryLength else c.summaryService.defaultLength()
+            _state.update { it.copy(summaryLength = len, summary = SummaryUi.Working("Préparation…", null)) }
+            c.summaryService.summarize(articleId, force, length = len).collect { p ->
                 val ui = when (p) {
                     is SummaryProgress.Working -> SummaryUi.Working(p.stage, p.partial)
                     is SummaryProgress.Done -> p.toUi()
                     is SummaryProgress.Failed -> SummaryUi.Error(p.message)
                 }
-                _state.update { it.copy(summary = ui) }
+                _state.update {
+                    it.copy(
+                        summary = ui,
+                        summaryLengths = if (p is SummaryProgress.Done) it.summaryLengths + len else it.summaryLengths,
+                    )
+                }
             }
         }
+    }
+
+    fun selectSummaryLength(length: com.asawaaah.fil.ai.SummaryLength) {
+        if (length == _state.value.summaryLength && _state.value.summary is SummaryUi.Done) return
+        summarize(length = length)
     }
 
     /** French in the summary card when there is a translation (made automatically or asked for). */
@@ -304,7 +332,7 @@ class ReaderViewModel(private val c: AppContainer, private val articleId: Long) 
         }
         viewModelScope.launch {
             _state.update { it.copy(summary = done.copy(translating = true, translationFailed = false)) }
-            val french = c.summaryService.translateSummary(articleId)
+            val french = c.summaryService.translateSummary(articleId, _state.value.summaryLength)
             _state.update {
                 val current = it.summary as? SummaryUi.Done ?: return@update it
                 it.copy(

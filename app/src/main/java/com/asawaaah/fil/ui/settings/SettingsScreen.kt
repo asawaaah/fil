@@ -127,6 +127,7 @@ private val searchIndex = listOf(
     SearchEntry("Télécharger les langues seulement en Wi-Fi", Page.TRADUCTION, "wifi donnees mobiles"),
     SearchEntry("Modèle d'IA (Gemma, Qwen)", Page.IA, "modele gemma qwen telecharger resume e4b e2b tensor"),
     SearchEntry("Préparer les résumés pendant la recharge", Page.IA, "batterie charge avance"),
+    SearchEntry("Longueur des résumés (court, moyen, détaillé)", Page.IA, "long court detaille taille resume"),
     SearchEntry("Utiliser la puce graphique (GPU)", Page.IA, "gpu acceleration vitesse"),
     SearchEntry("Importer un modèle .litertlm", Page.IA, "litertlm fichier modele gguf"),
     SearchEntry("Vitesse de lecture audio", Page.AUDIO, "voix ecouter vitesse tts"),
@@ -246,7 +247,8 @@ fun SettingsScreen(onImportOpml: () -> Unit, onOpenTopics: () -> Unit = {}) {
                             "${languages.size} langue${if (languages.size > 1) "s" else ""}",
                         ).filterNotNull().joinToString(" · ")),
                         Triple(Page.IA, Icons.Default.AutoAwesome,
-                            (selectedModel?.name ?: "Aucun modèle") + if (selectedModel != null && selectedModel.id in installed) " · installé" else " · à télécharger"),
+                            (selectedModel?.name ?: "Aucun modèle") + (if (selectedModel != null && selectedModel.id in installed) " · installé" else " · à télécharger") +
+                                " · résumés ${com.asawaaah.fil.ai.SummaryLength.of(s.summaryLength).label.lowercase()}s"),
                         Triple(Page.AUDIO, Icons.Outlined.Headphones, "Vitesse ${rateLabel(s.readAloudRate)}"),
                         Triple(Page.NOTIFICATIONS, Icons.Outlined.Notifications,
                             if (followed == 0) "Aucune source suivie" else "$followed source${if (followed > 1) "s" else ""} suivie${if (followed > 1) "s" else ""}"),
@@ -352,6 +354,15 @@ fun SettingsScreen(onImportOpml: () -> Unit, onOpenTopics: () -> Unit = {}) {
                             ModelCard(vm, model, installed = model.id in installed, selected = s.selectedModelId == model.id)
                         }
                     }
+                    item {
+                        ChoiceRow(
+                            "Longueur des résumés par défaut",
+                            com.asawaaah.fil.ai.SummaryLength.entries.map { it.name to it.label },
+                            s.summaryLength,
+                            vm::setSummaryLength,
+                        )
+                    }
+                    item { Hint("Court : une ou deux phrases. Moyen : 3 à 5 points. Détaillé : 6 à 8 points avec le contexte et les chiffres. Les trois restent accessibles dans chaque article.") }
                     item {
                         SwitchRow(
                             "Préparer les résumés pendant la recharge",

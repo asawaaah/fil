@@ -22,6 +22,7 @@ sealed interface SummaryProgress {
         val detail: String? = null,
         val language: String = "fr",
         val french: String? = null,
+        val length: SummaryLength = SummaryLength.MEDIUM,
     ) : SummaryProgress
 
     data class Failed(val message: String) : SummaryProgress
@@ -49,38 +50,51 @@ class SummaryService(
     private suspend fun targetFor(articleLang: String?): String =
         SummaryLanguage.target(articleLang, settings.current().autoTranslate, translation.translator.canTranslate(articleLang))
 
-    /** Summary already made for this article, translated into French if the settings want French. */
-    suspend fun cached(articleId: Long): SummaryProgress.Done? {
+    suspend fun defaultLength(): SummaryLength = SummaryLength.of(settings.current().summaryLength)
+
+    /** Summary of this [length] already made, translated into French if the settings want French. */
+    suspend fun cached(articleId: Long, length: SummaryLength): SummaryProgress.Done? {
         val content = articles.content(articleId) ?: return null
-        val summary = content.summary ?: return null
-        val lang = content.summaryLang ?: "fr"
-        var french = content.summaryFr
-        if (lang != "fr" && french == null) {
+        val stored = content.summaryOf(length) ?: return null
+        var french = stored.french
+        if (stored.lang != "fr" && french == null) {
             val article = db.articleDao().getById(articleId)
             // Never regenerate just to change language: translate the existing text.
-            if (targetFor(article?.lang) == "fr") french = translateAndStore(articleId, summary, lang)
+            if (targetFor(article?.lang) == "fr") french = translateAndStore(articleId, length, stored.text, stored.lang)
         }
-        return SummaryProgress.Done(summary, ModelCatalog.byId(content.summaryModel).name, language = lang, french = french)
+        return SummaryProgress.Done(stored.text, ModelCatalog.byId(stored.model).name, language = stored.lang, french = french, length = length)
     }
 
-    /** French version of the article's summary, translated now if needed. Null when it can't be done now. */
-    suspend fun translateSummary(articleId: Long): String? {
-        val content = articles.content(articleId) ?: return null
-        content.summaryFr?.let { return it }
-        val summary = content.summary ?: return null
-        return translateAndStore(articleId, summary, content.summaryLang ?: return summary)
+    /** The lengths already summarized for this article. */
+    suspend fun availableLengths(articleId: Long): Set<SummaryLength> {
+        val content = articles.content(articleId) ?: return emptySet()
+        return SummaryLength.entries.filter { content.summaryOf(it) != null }.toSet()
     }
 
-    private suspend fun translateAndStore(articleId: Long, text: String, lang: String): String? {
+    /** French version of the article's summary of this [length], translated now if needed. */
+    suspend fun translateSummary(articleId: Long, length: SummaryLength): String? {
+        val stored = articles.content(articleId)?.summaryOf(length) ?: return null
+        stored.french?.let { return it }
+        if (stored.lang == "fr") return stored.text
+        return translateAndStore(articleId, length, stored.text, stored.lang)
+    }
+
+    private suspend fun translateAndStore(articleId: Long, length: SummaryLength, text: String, lang: String): String? {
         val french = translation.translateLines(text, lang) ?: return null
-        articles.updateContent(articleId) { it.copy(summaryFr = french) }
+        articles.updateContent(articleId) { it.withSummaryFr(length, french) }
         return french
     }
 
     /** Summary of an article, from the cache or generated now on the device. */
-    fun summarize(articleId: Long, force: Boolean = false, allowNetwork: Boolean = true): Flow<SummaryProgress> = flow {
+    fun summarize(
+        articleId: Long,
+        force: Boolean = false,
+        allowNetwork: Boolean = true,
+        length: SummaryLength? = null,
+    ): Flow<SummaryProgress> = flow {
+        val len = length ?: defaultLength()
         if (!force) {
-            cached(articleId)?.let {
+            cached(articleId, len)?.let {
                 emit(it)
                 return@flow
             }
@@ -102,7 +116,7 @@ class SummaryService(
             return@flow
         }
         try {
-            summarizer.summarize(article.title, text, target).collect { event ->
+            summarizer.summarize(article.title, text, target, len).collect { event ->
                 when (event) {
                     SummaryEvent.LoadingModel -> emit(SummaryProgress.Working("Chargement du modèle…"))
                     SummaryEvent.Reading -> emit(SummaryProgress.Working("Lecture de l'article…"))
@@ -123,18 +137,11 @@ class SummaryService(
                                 french = translation.translateLines(event.text, written)
                             }
                         }
-                        articles.updateContent(articleId) {
-                            it.copy(
-                                summary = event.text,
-                                summaryModel = event.model.id,
-                                summaryAt = System.currentTimeMillis(),
-                                summaryLang = lang,
-                                summaryFr = french,
-                            )
-                        }
+                        val stored = StoredSummary(event.text, lang, french, event.model.id)
+                        articles.updateContent(articleId) { it.withSummary(len, stored, System.currentTimeMillis()) }
                         val seconds = (System.currentTimeMillis() - started + 500) / 1000
                         val detail = listOfNotNull(event.accelerator?.label, "$seconds s").joinToString(" · ")
-                        emit(SummaryProgress.Done(event.text, event.model.name, detail, lang, french))
+                        emit(SummaryProgress.Done(event.text, event.model.name, detail, lang, french, len))
                     }
                 }
             }

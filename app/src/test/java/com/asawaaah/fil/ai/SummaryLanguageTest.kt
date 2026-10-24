@@ -32,4 +32,16 @@ class SummaryLanguageTest {
         val fr = Summarizer.buildPrompt("Titre", "Texte", model, "fr")
         assertTrue(fr, fr.contains("en français"))
     }
+
+    @Test
+    fun promptFollowsTheLength() {
+        val model = ModelCatalog.GEMMA4_E2B
+        val short = Summarizer.buildPrompt("Titre", "Texte", model, "fr", SummaryLength.SHORT)
+        assertTrue(short, short.contains("une ou deux phrases") && !short.contains("•"))
+        assertTrue(Summarizer.buildPrompt("Titre", "Texte", model, "fr", SummaryLength.MEDIUM).contains("3 à 5 points"))
+        val long = Summarizer.buildPrompt("Título", "Texto", model, "es", SummaryLength.LONG)
+        assertTrue(long, long.contains("6 to 8 points") && long.contains("in Spanish"))
+        assertTrue(SummaryLength.SHORT.maxTokens < SummaryLength.MEDIUM.maxTokens && SummaryLength.MEDIUM.maxTokens < SummaryLength.LONG.maxTokens)
+        assertEquals(SummaryLength.MEDIUM, SummaryLength.of("nonsense"))
+    }
 }

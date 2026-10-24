@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 private const val LIST_COLUMNS = """
     a.id, a.feedId, a.title, a.titleFr, a.excerpt, a.excerptFr, a.imageUrl, a.url, a.publishedAt,
     a.isRead, a.isSaved, a.lang, f.title AS feedTitle, f.iconUrl AS feedIconUrl,
-    f.siteUrl AS feedSiteUrl, (c.summary IS NOT NULL) AS hasSummary, a.topics
+    f.siteUrl AS feedSiteUrl, (c.summary IS NOT NULL OR c.summaryShort IS NOT NULL OR c.summaryLong IS NOT NULL) AS hasSummary, a.topics
 """
 
 private const val LIST_FROM = """
@@ -227,7 +227,8 @@ interface ArticleDao {
     @Query(
         """
         SELECT a.* FROM articles a LEFT JOIN article_content c ON c.articleId = a.id
-        WHERE a.publishedAt > :since AND a.isRead = 0 AND c.summary IS NULL
+        WHERE a.publishedAt > :since AND a.isRead = 0
+            AND c.summary IS NULL AND c.summaryShort IS NULL AND c.summaryLong IS NULL
         ORDER BY a.publishedAt DESC LIMIT :limit
         """,
     )

@@ -379,6 +379,9 @@ fun ReaderScreen(articleId: Long, onBack: () -> Unit, onOpenSettings: () -> Unit
                     SummaryCard(
                         state.summary,
                         settings,
+                        length = state.summaryLength,
+                        made = state.summaryLengths,
+                        onLength = vm::selectSummaryLength,
                         onRetry = { vm.summarize(force = true) },
                         onClose = vm::hideSummary,
                         onOpenSettings = onOpenSettings,
@@ -533,6 +536,9 @@ private fun ActionRow(state: ReaderState, vm: ReaderViewModel, aiAvailable: Bool
 private fun SummaryCard(
     summary: SummaryUi,
     settings: Settings,
+    length: com.asawaaah.fil.ai.SummaryLength,
+    made: Set<com.asawaaah.fil.ai.SummaryLength>,
+    onLength: (com.asawaaah.fil.ai.SummaryLength) -> Unit,
     onRetry: () -> Unit,
     onClose: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -552,6 +558,22 @@ private fun SummaryCard(
                     IconButton(onClick = onRetry, modifier = Modifier.size(32.dp)) { Icon(Icons.Default.Refresh, "Refaire le résumé", Modifier.size(18.dp)) }
                 }
                 IconButton(onClick = onClose, modifier = Modifier.size(32.dp)) { Icon(Icons.Default.Close, "Fermer", Modifier.size(18.dp)) }
+            }
+            if (summary != SummaryUi.NeedsModel) {
+                // Short, medium or detailed; those already made are instant.
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    com.asawaaah.fil.ai.SummaryLength.entries.forEach { l ->
+                        androidx.compose.material3.FilterChip(
+                            selected = l == length,
+                            onClick = { onLength(l) },
+                            label = { Text(l.label) },
+                            shape = com.asawaaah.fil.ui.glass.CapsuleShape,
+                            modifier = Modifier.semantics {
+                                contentDescription = "Résumé ${l.label.lowercase()}" + if (l in made && l != length) ", déjà prêt" else ""
+                            },
+                        )
+                    }
+                }
             }
             val textStyle = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = (16 * settings.textScale).sp,

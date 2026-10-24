@@ -113,6 +113,7 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
     fun setTranslateWifiOnly(v: Boolean) = edit { c.settings.setTranslateWifiOnly(v) }
     fun setAiTranslation(v: Boolean) = edit { c.settings.setAiTranslation(v) }
     fun setPrepareSummaries(v: Boolean) = edit { c.settings.setPrepareSummaries(v) }
+    fun setSummaryLength(v: String) = edit { c.settings.setSummaryLength(v) }
     fun setUseGpu(v: Boolean) = edit {
         if (v) c.llm.resetGpuCrash()
         c.settings.setUseGpu(v)
