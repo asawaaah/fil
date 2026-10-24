@@ -26,24 +26,18 @@ def main(src: str) -> None:
     logo = logo.crop(box)
     alpha = logo.getchannel("A")
     w, h = logo.size
-    # Centre and radius of the smallest circle holding every visible pixel (searched on a grid),
-    # so that the logo is as big as possible inside the launcher's circle.
+    # The globe is centred, not the whole drawing: the loop at the bottom right would pull it
+    # off-centre. Its extremes are read where the loop can't be: left and top edges, the right
+    # edge in the upper half, the bottom edge in the left half.
     px = alpha.load()
-    points = [(x + 0.5, y + 0.5) for y in range(0, h, 2) for x in range(0, w, 2) if px[x, y] > 40]
-
-    def reach(c):
-        return max(math.hypot(x - c[0], y - c[1]) for x, y in points)
-
-    best = (w / 2, h / 2)
-    step = max(w, h) / 8
-    while step > 0.5:
-        candidates = [(best[0] + dx * step, best[1] + dy * step) for dx in (-1, 0, 1) for dy in (-1, 0, 1)]
-        nxt = min(candidates, key=reach)
-        if nxt == best:
-            step /= 2
-        best = nxt
-    cx, cy = best
-    radius = reach(best) + 1
+    visible = [(x, y) for y in range(h) for x in range(w) if px[x, y] > 40]
+    left = min(x for x, _ in visible)
+    top = min(y for _, y in visible)
+    right = max(x for x, y in visible if y < h / 2)
+    bottom = max(y for x, y in visible if x < w / 2)
+    cx, cy = (left + right + 1) / 2, (top + bottom + 1) / 2
+    # Scale so that every pixel, loop included, stays inside the visible circle.
+    radius = max(math.hypot(x + 0.5 - cx, y + 0.5 - cy) for x, y in visible[::3]) + 1
     for name, factor in DENSITIES.items():
         canvas = round(CANVAS_DP * factor)
         scale = (RADIUS_DP * factor) / radius
